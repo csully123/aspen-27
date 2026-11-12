@@ -267,8 +267,8 @@ const CLOUD9_THIS_YEAR = 1000;      // about $685 to book + about $300 there
 // Last year vs this year's options. Costs are per person. Last year's costs match the Budget tab.
 const PLAN = [
   { day: "Thursday, Jan 21", slots: [
-    { id: "thu-hh", label: "Happy hour", last: { name: "Clark's Oyster Bar", cost: "~$60", note: "Half-price martinis and oysters. It was great." }, picks: [
-      { name: "Clark's Oyster Bar", cost: "about $55", desc: "Running it back. Packed, buzzy oyster bar with a 3 to 5 PM happy hour: $10 top-shelf martinis, $12 burgers, discounted oysters and $5 oyster shooters.",
+    { id: "thu-hh", label: "Happy hour", last: { name: "Clark's Oyster Bar", cost: "~$60", note: "Half-price martinis and oysters." }, picks: [
+      { name: "Clark's Oyster Bar", cost: "about $55", desc: "Packed, buzzy oyster bar with a 3 to 5 PM happy hour: $10 top-shelf martinis, $12 burgers, discounted oysters and $5 oyster shooters.",
         res: "Reservations open Dec 22 (30 days out). We'd book a table for 7 around 4:30 so we have seats." },
       { name: "Las Montañas", cost: "about $35", desc: "Mexican happy hour from 3 to 5 PM: $5 crispy beef tacos, $8 chicken chalupas, $8 Mexican beer and $10 frozen margaritas. We could roll straight into dinner here.",
         res: "Books on OpenTable for up to 20. Jan 21 should open in early December." },
@@ -285,33 +285,32 @@ const PLAN = [
   ] },
   { day: "Friday, Jan 22", slots: [
     { id: "fri-lunch", label: "Lunch", last: { name: "Cloud Nine", cost: "~$540", note: "Chris had a plug that is no longer available, and prices have increased this year." }, picks: [
-      { name: "Cloud Nine again", cost: "about $1,000", desc: "The champagne-spraying lunch party at Aspen Highlands, 1:45 PM seating. About $685 each to book plus about $300 there. 21 and over with ID. Also vote in My answers.",
+      { name: "Cloud Nine", cost: "about $1,000", desc: "The champagne-spraying lunch party at Aspen Highlands, 1:45 PM seating. About $685 each to book plus about $300 there (for only ordering one bottle each. Spray gets rid of half and you get to drink the other half of the bottle). Also vote in My answers.",
         res: "Books on Tock. Not open yet; Cloud Nine opens for the season Dec 12. We need to decide soon." },
-      { name: "Ski Snowmass, lunch on the mountain", cost: "about $40", desc: "The easy option if we skip Cloud Nine. Ullrhof, the mid-mountain restaurant, reopens this season after a full rebuild.", res: "No reservation needed." } ] },
-    { id: "fri-apres", label: "Après", last: { name: "The Little Nell", cost: "~$70", note: "Fancy après at the base of Aspen Mountain." }, picks: [
+      { name: "Ski one of the mountains, lunch on the mountain", cost: "about $40", desc: "The easy option if we skip Cloud Nine.", res: "No reservation needed." } ] },
+    { id: "fri-apres", label: "Après", last: { name: "The Little Nell", cost: "~$70", note: "Après at the base of Aspen Mountain." }, picks: [
       { name: "Venga Venga", cost: "about $50 to $80", desc: "Slope-side Mexican patio at the bottom of Fanny Hill in Snowmass with an outdoor bar, fire pits and margaritas. We ski right to it and it's a short trip back to Timbers.",
         res: "Walk up. We'd call ahead to hold space for 7." },
       { name: "Highlands Alehouse", cost: "about $40 to $60", desc: "The bar at the bottom of Highlands we skied into last year. Laid-back, rowdy and fun, with a big crowd coming off the mountain. (Would only go here if we chose Cloud 9.)", res: "Walk in. Reopens for winter Dec 12." },
       { name: "Ajax Tavern, then the WET Deck", cost: "about $75 to $150", desc: "Only if we ski Aspen Mountain that day. Truffle fries on the Ajax patio, then the W's rooftop with a DJ, fire pits and a hot tub.", res: "The WET Deck books on OpenTable for up to 20." } ] },
-    { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the house." }, picks: [
+    { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the residence." }, picks: [
       { name: "Tasters and game night", cost: "about $15 to $20", desc: "Same again: New York-style pizza delivered to Timbers, games and the hot tub.", res: "No reservation needed." },
-      { name: "Woody Creek Tavern and game night", cost: "about $40 to $55", desc: "Burgers, fish tacos and enchiladas from Hunter S. Thompson's old hangout, eaten at the house with games and the hot tub. Burger and fish tacos are $27 each.", res: "They take online orders, but delivery isn't confirmed. Someone would likely need to pick it up, about 20 minutes each way." },
-      { name: "Il Poggio", cost: "about $80 to $120", desc: "Lively Italian in Snowmass with hearth-baked pizzas and pasta, if we'd rather go out without leaving the village.", res: "To be confirmed if we want it." },
-      { name: "Kenichi Snowmass", cost: "about $100 to $150", desc: "The Snowmass outpost of Kenichi, for sushi without the drive to Aspen.", res: "To be confirmed if we want it." } ] }
+      { name: "Woody Creek Tavern", cost: "about $60 to $85", desc: "Dinner out at Hunter S. Thompson's old hangout: a funky, rustic roadhouse covered in memorabilia, known for burgers, fish tacos, enchiladas and margaritas. Burger and fish tacos are $27 each.", res: "About 20 minutes from Timbers, so we'd need a ride each way. Reservations for 7 to be confirmed." },
+      { name: "Il Poggio", cost: "about $80 to $120", desc: "Lively Italian in Snowmass with hearth-baked pizzas and pasta, if we'd rather go out without leaving the village.", res: "To be confirmed if we want it." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
     { id: "sat-bfast", label: "Breakfast", last: { name: "Daly Diner", cost: "~$25", note: "Diner breakfast in Snowmass before skiing." }, picks: [
       { name: "Breakfast at Timbers", cost: "free", desc: "Breakfast at the club before heading out.", res: "No reservation needed." },
       { name: "Daly Diner", cost: "about $25", desc: "The diner again.", res: "No reservation needed." } ] },
     { id: "sat-lunch", label: "Lunch and après", last: { name: "Up 4 Pizza, then free après at Timbers", cost: "~$40", note: "Skied Snowmass all day." }, picks: [
-      { name: "Same again", cost: "about $40", desc: "Ski Snowmass, lunch on the mountain, then the free après at Timbers from 3:30 to 4:30 before getting ready to go out.", res: "No reservation needed." } ] },
-    { id: "sat-drinks", label: "Drinks before dinner", last: { name: "Aspen Brewing Co", cost: "~$20", note: "Very chill, which was great." }, picks: [
-      { name: "Aspen Public House", cost: "about $20", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
-      { name: "Aspen Brewing Co", cost: "about $15", desc: "Last year's spot: craft beer, pizza, darts and pool.", res: "Walk in." },
-      { name: "J-Bar", cost: "about $20", desc: "The classic western bar at the Hotel Jerome and a longtime town hangout. Good for one round, but expect to stand on a Saturday.", res: "Walk in only." },
-      { name: "BUCK", cost: "about $20", desc: "Old-school ski bar with a high-energy crowd, and cheap by Aspen standards.", res: "Walk in." },
-      { name: "Stranahan's Whiskey Lodge", cost: "about $20", desc: "Western-style whiskey and cocktail bar on the walking mall.", res: "Walk in." } ] },
-    { id: "sat-din", label: "Dinner (the splurge)", last: { name: "Caribou Club", cost: "~$225", note: "Members club. Dinner, then the DJ started at 10." }, picks: [
+      { name: "Ski one of the mountains, lunch on the mountain", cost: "about $40", desc: "Lunch on the mountain, then the free après at Timbers from 3:30 to 4:30 before getting ready to go out.", res: "No reservation needed." } ] },
+    { id: "sat-drinks", label: "Drinks before dinner", last: { name: "Aspen Brewing Co", cost: "~$20", note: "Very chill." }, picks: [
+      { name: "Aspen Public House", cost: "about $18 a drink", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
+      { name: "Aspen Brewing Co", cost: "about $10 a beer", desc: "Last year's spot: craft beer, pizza, darts and pool.", res: "Walk in." },
+      { name: "J-Bar", cost: "about $25 a drink", desc: "The classic western bar at the Hotel Jerome and a longtime town hangout. Good for one round, but expect to stand on a Saturday.", res: "Walk in only." },
+      { name: "BUCK", cost: "about $15 a drink", desc: "Old-school ski bar with a high-energy crowd, and cheap by Aspen standards.", res: "Walk in." },
+      { name: "Stranahan's Whiskey Lodge", cost: "about $25 a drink", desc: "Western-style whiskey and cocktail bar on the walking mall.", res: "Walk in." } ] },
+    { id: "sat-din", label: "Dinner", last: { name: "Caribou Club", cost: "~$225", note: "Members club. Dinner, then the DJ started at 10." }, picks: [
       { name: "Kenichi", cost: "about $130 to $175", desc: "Sushi and Japanese with a buzzy bar scene and big tables built for 7 to 12. Miso black cod, yellowtail serrano, rolls and wagyu on a hot rock. Rated 4.8 on OpenTable and 4.4 on Google.",
         res: "Books on OpenTable. Open through Dec 23 right now, so Jan 23 should open around Dec 13. $30 each deposit that goes toward the bill. It's closed for the off-season, so we'd confirm it reopens." },
       { name: "Jing", cost: "about $130 to $200", desc: "A louder room. Chinese plus sushi, good music, open until 10. Reviewers call it the place everyone ends up.", res: "Booking window to be confirmed." },
@@ -319,6 +318,7 @@ const PLAN = [
       { name: "Betula", cost: "about $150 to $200", desc: "French and South American menu with a sunset view and a DJ that runs until midnight.", res: "By email. Reopens for winter Nov 26." },
       { name: "Caribou Club again", cost: "about $225", desc: "Seafood towers, caviar and club plates, and the DJ starts at 10 so we wouldn't need to go anywhere after.", res: "By arrangement, same as last year." } ] },
     { id: "sat-out", label: "Night out", last: { name: "Stayed at Caribou Club", cost: "~$50", note: "Dance floor picked up around 11." }, picks: [
+      { name: "Caribou Club", cost: "about $50", desc: "Where we ended up last year. Members club with a DJ from 10 PM, and the dance floor picks up around 11.", res: "By arrangement, same as last year." },
       { name: "Escobar or Sterling", cost: "about $50", desc: "The two DJ clubs.", res: "Walk in." },
       { name: "Silver City", cost: "about $40", desc: "Western saloon with live bands.", res: "Walk in." },
       { name: "Bad Harriet", cost: "$50 deposit each", desc: "Speakeasy under the Hotel Jerome with a DJ from 10 PM.", res: "Books on Resy." } ] }
