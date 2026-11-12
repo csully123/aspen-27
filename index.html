@@ -126,6 +126,34 @@
   #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
     padding: 10px 16px; border-radius: 999px; font-weight: 700; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
   #toast.on { opacity: 1; }
+  /* ---- make everything clickable look clickable ---- */
+  .opts label, .switches label { display: inline-flex; align-items: center; gap: 8px; border: 2px solid var(--accent); color: var(--accent); background: var(--card);
+    font-weight: 700; box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 35%, transparent); transition: transform .06s, box-shadow .06s, background .1s; }
+  .opts label::before, .switches label::before { content: ""; flex: none; width: 18px; height: 18px; border: 2px solid currentColor; border-radius: 50%; display: grid; place-items: center; font-size: 12px; line-height: 1; font-weight: 900; }
+  .opts label:has(input[type=checkbox])::before, .switches label::before { border-radius: 5px; }
+  .opts label:has(input:checked)::before, .switches label:has(input:checked)::before { content: "✓"; background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+  .opts label:hover, .switches label:hover { background: var(--soft); }
+  .opts label:has(input:checked):hover, .switches label:has(input:checked):hover { background: var(--accent); }
+  .opts label:active, .switches label:active, .choice:active, button.btn:active { transform: translateY(2px); box-shadow: none; }
+  .choice { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 30%, transparent); transition: transform .06s, box-shadow .06s, background .1s; }
+  .choice:hover { background: var(--soft); }
+  .choice .ttl { display: flex; align-items: flex-start; gap: 8px; }
+  .choice .ttl::before { content: ""; flex: none; width: 18px; height: 18px; margin-top: 2px; border: 2px solid var(--accent); border-radius: 50%; display: grid; place-items: center; font-size: 12px; line-height: 1; font-weight: 900; color: var(--accent-ink); }
+  .choice.on .ttl::before { content: "✓"; background: var(--accent); }
+  .choice .tap { font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); margin-top: 8px; }
+  button.btn { box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 45%, #000); transition: transform .06s, box-shadow .06s; }
+  button.btn.ghost { box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 35%, transparent); }
+  .daycard summary { border-radius: 10px; margin: -6px -8px; padding: 6px 8px; }
+  .daycard[open] summary { margin-bottom: 0; }
+  .daycard summary:hover { background: var(--soft); }
+  .daycard summary .dname::before { width: 1.5em; height: 1.5em; margin-right: 8px; border: 2px solid var(--accent); border-radius: 8px; color: var(--accent);
+    display: inline-grid; place-items: center; font-size: .8em; vertical-align: 2px; }
+  .daycard summary .dname::after { content: "tap to close"; font: 600 .72rem/1 -apple-system, "Segoe UI", sans-serif; color: var(--muted); margin-left: 8px; letter-spacing: 0; }
+  .daycard:not([open]) summary .dname::after { content: "tap to open"; }
+  nav.tabs button { border-radius: 10px 10px 0 0; } nav.tabs button:hover { background: var(--soft); color: var(--ink); }
+  header.top select { background: #fff; color: #14304a; border: 2px solid #fff; font-weight: 700; box-shadow: 0 3px 0 #0003; }
+  .herohint { text-decoration: underline; }
+  button.link { font-weight: 700; }
 </style>
 </head>
 <body>
@@ -367,7 +395,8 @@ function renderBudget() {
     return h("button", { type: "button", class: "choice" + (on ? " on" : ""), "aria-pressed": on ? "true" : "false", onclick: () => { ski[k] = on ? "" : kind; if (!ski.fri && !ski.sat) { ski.lift = false; ski.rent = false; } save(); } },
       h("span", { class: "ttl" }, `I plan on skiing a ${kind} day on ${d.day}`),
       h("span", { class: "price" }, `Lift ticket about ${money0(d[kind])}`, kind === "full" && h("span", { class: "advnote" }, " (advanced booking can give discount)")),
-      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo)); };
+      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo),
+      h("span", { class: "tap" }, on ? "Selected. Tap to remove" : "Tap to select")); };
   const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
     h("div", { class: "lbl" }, "Your rough total for the trip"),
     h("div", { class: "big" }, money0(total)),
