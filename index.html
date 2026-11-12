@@ -154,6 +154,11 @@
   header.top select { background: #fff; color: #14304a; border: 2px solid #fff; font-weight: 700; box-shadow: 0 3px 0 #0003; }
   .herohint { text-decoration: underline; }
   button.link { font-weight: 700; }
+  .switches label.goldbtn { border-color: #d4a017; color: var(--ink); box-shadow: 0 3px 0 #d4a01766; }
+  .switches label.goldbtn::before { border-color: #d4a017; }
+  .switches label.goldbtn:has(input:checked), .switches label.goldbtn:has(input:checked):hover { background: #d4a017; border-color: #d4a017; color: #2a1e00; }
+  .switches label.goldbtn:has(input:checked)::before { background: #2a1e00; color: #f3c748; border-color: #2a1e00; }
+  .switches label.goldbtn:has(input:focus-visible) { outline-color: #d4a017; }
 </style>
 </head>
 <body>
@@ -420,7 +425,7 @@ function renderBudget() {
       c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain.")
          : h("p", {}, "The champagne lunch on Friday costs about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person and would replace lunch on the mountain."),
       h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
-      h("div", { class: "switches" }, h("label", {}, h("input", { type: "checkbox", checked: c9, onchange: (e) => { c9 = e.target.checked; ls.set("aspen_c9", c9); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); toast("Champagne showers!"); } } }),
+      h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { c9 = e.target.checked; ls.set("aspen_c9", c9); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
         "I want to pop champagne like I just won a championship")))
   );
 }
