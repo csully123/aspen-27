@@ -378,6 +378,7 @@ async function makeFirebaseStore() {
     signInOrganizer: (email, pw) => A.signInWithEmailAndPassword(auth, email, pw),
     signOut: () => A.signOut(auth),
     saveResponse: (name, data) => F.setDoc(F.doc(db, C("responses"), key(name)), { ...data, name, updatedAt: F.serverTimestamp() }),
+    saveVote: (name, data) => F.setDoc(F.doc(db, C("responses"), key(name)), { ...data, name, updatedAt: F.serverTimestamp() }, { merge: true }),
     saveRental: (name, data) => F.setDoc(F.doc(db, C("rentals"), key(name)), { ...data, name, cancelled: false, updatedAt: F.serverTimestamp() }, { merge: true }),
     deleteRental: (name) => F.setDoc(F.doc(db, C("rentals"), key(name)), { name, cancelled: true, updatedAt: F.serverTimestamp() }),
     watchResponses: (cb) => F.onSnapshot(F.collection(db, C("responses")), (s) => cb(s.docs.map((d) => d.data())), () => cb([])),
@@ -398,6 +399,7 @@ function makeLocalStore() {
     signInOrganizer: async () => { const u = { email: "organizer", organizer: true }; ls.set("demo_user", u); authCb(u); },
     signOut: async () => { ls.set("demo_user", null); authCb(null); },
     saveResponse: async (name, data) => { const all = ls.get("demo_responses", {}); all[key(name)] = { ...data, name }; ls.set("demo_responses", all); emit("responses"); },
+    saveVote: async (name, data) => { const all = ls.get("demo_responses", {}); all[key(name)] = { ...(all[key(name)] || {}), ...data, name }; ls.set("demo_responses", all); emit("responses"); },
     saveRental: async (name, data) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { ...(all[key(name)] || {}), ...data, name, cancelled: false }; ls.set("demo_rentals", all); },
     deleteRental: async (name) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { name, cancelled: true }; ls.set("demo_rentals", all); },
     watchResponses: (cb) => { subs.responses.push(cb); emit("responses"); },
@@ -414,7 +416,10 @@ let user = null, me = ls.get("aspen_me", ""), responses = [], suggestions = [], 
 
 /* ---------- budget tab ---------- */
 let shut = ls.get("aspen_shut", {});
-let c9 = ls.get("aspen_c9", false);
+let c9 = ls.get("aspen_c9", false), meDirty = false;
+const answered = (r) => !!r && ["splurge", "sushi", "arrive", "depart"].some((k) => k in r);
+function setC9(on) { c9 = on; ls.set("aspen_c9", c9); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
+function voteC9Yes() { if (!me) return; store.saveVote(me, { cloud9: "Yes" }).catch(() => {}); const el = document.querySelector('#meForm input[name="cloud9"][value="Yes"]'); if (el) el.checked = true; }
 const SKI_NONE = { on: false, fri: "", sat: "", lift: false, rent: false };
 const skiFrom = (d) => ({ on: !!d.on, fri: d.fri || "", sat: d.sat || "", lift: !!d.lift, rent: !!d.rent });
 let ski = ls.get("aspen_ski2", { ...SKI_NONE }), skiDocs = {}, skiSynced = false;
@@ -467,7 +472,7 @@ function renderBudget() {
       c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain, and a casual dinner in at about ", h("b", {}, "$20"), " in place of dinner out.")
          : h("p", {}, "The champagne lunch on Friday costs about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person and would replace lunch on the mountain. We'd also stay in for a casual dinner that night, about $20 in place of about $100 for dinner out."),
       h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
-      h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { c9 = e.target.checked; ls.set("aspen_c9", c9); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => {}); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
+      h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { setC9(e.target.checked); if (c9) voteC9Yes(); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
         "I want to pop champagne like I just won a championship")))
   );
 }
@@ -574,7 +579,7 @@ function radio(name, opts, val) {
 function field(label, input) { return h("div", { class: "field" }, h("span", {}, label), input); }
 
 function renderMe() {
-  const root = $("#tab-me");
+  const root = $("#tab-me"); meDirty = false;
   if (!me) { root.replaceChildren(h("div", { class: "card" }, h("h2", {}, "Who are you?"), h("p", { class: "muted" }, "Pick your name at the top of the page to fill in your answers."))); return; }
   const r = responses.find((x) => key(x.name || "") === key(me)) || {};
   const rent = ls.get("aspen_rental_" + key(me), {});
@@ -626,9 +631,15 @@ function renderMe() {
       h("div", { class: "grid2" },
         field("Airport", sel("d_airport", AIRPORTS, d.airport)), field("Airline and flight number", inp("d_flight", "text", d.flight)),
         field("Date", inp("d_date", "date", d.date || "2027-01-24")))),
-    h("div", { class: "savebar" }, h("button", { class: "btn" }, "Save my answers"), h("span", { class: "small muted", id: "saveNote" }, r.name ? "Saved before. Saving again updates it." : "")));
+    h("div", { class: "savebar" }, h("button", { class: "btn" }, "Save my answers"), h("span", { class: "small muted", id: "saveNote" }, answered(r) ? "Saved before. Saving again updates it." : "")));
 
   rentalBox.classList.toggle("hide", !renting);
+  form.addEventListener("input", (e) => { if (e.target.name !== "cloud9") meDirty = true; });
+  form.addEventListener("change", (e) => {
+    if (e.target.name !== "cloud9") { meDirty = true; return; }
+    store.saveVote(me, { cloud9: e.target.value }).catch(() => toast("Couldn't save that answer. Try again."));
+    if (e.target.value === "No" && c9) { setC9(false); renderBudget(); }
+  });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(form), g = (k) => (f.get(k) || "").toString().trim();
@@ -636,7 +647,8 @@ function renderMe() {
       arrive: { airport: g("a_airport"), flight: g("a_flight"), date: g("a_date") }, depart: { airport: g("d_airport"), flight: g("d_flight"), date: g("d_date") }, diet: r.diet || "", notes: r.notes || "" };
     const btn = form.querySelector("button.btn"); btn.disabled = true;
     try {
-      await store.saveResponse(me, data);
+      await store.saveResponse(me, data); meDirty = false;
+      if (data.cloud9 === "No" && c9) { setC9(false); renderBudget(); }
       if (renting) {
         const rental = { package: g("r_package"), ability: g("r_ability"), height: g("r_height"), weight: g("r_weight"), age: g("r_age"), boot: g("r_boot"), days: g("r_days"), stance: g("r_stance"), helmet: g("r_helmet"), insurance: g("r_insurance") };
         const filled = Object.fromEntries(Object.entries(rental).filter(([, v]) => v !== "" && v != null));
@@ -652,7 +664,7 @@ function renderMe() {
 /* ---------- organizer report (only Chris's login sees this) ---------- */
 function reportSections() {
   const by = Object.fromEntries(responses.map((r) => [key(r.name || ""), r]));
-  const done = PEOPLE.filter((p) => by[key(p)]), waiting = PEOPLE.filter((p) => !by[key(p)]);
+  const done = PEOPLE.filter((p) => answered(by[key(p)])), waiting = PEOPLE.filter((p) => !answered(by[key(p)]));
   const list = (a) => a.length ? a.join(", ") : "nobody yet";
   const vote = (title, k) => { const m = {}; for (const r of responses) if (r[k]) (m[r[k]] ||= []).push(r.name);
     return Object.keys(m).length ? Object.entries(m).map(([o, n]) => `${title}: ${o} (${n.length}): ${n.join(", ")}`) : [`${title}: no answers yet`]; };
@@ -725,7 +737,7 @@ function startApp() {
   const who = $("#who");
   who.replaceChildren(h("option", { value: "" }, "Who are you?"), ...PEOPLE.map((p) => h("option", { value: p, selected: p === me }, p)));
   who.addEventListener("change", () => { const prev = me; me = who.value; ls.set("aspen_me", me);
-    if (me) { if (skiDocs[me]) { ski = skiFrom(skiDocs[me]); if ("c9" in skiDocs[me]) c9 = !!skiDocs[me].c9; } else if (prev) { ski = { ...SKI_NONE }; c9 = false; } else if (ski.on || c9) store.saveSki(me, { ...ski, c9 }).catch(() => {}); ls.set("aspen_ski2", ski); ls.set("aspen_c9", c9); }
+    if (me) { if (skiDocs[me]) { ski = skiFrom(skiDocs[me]); if ("c9" in skiDocs[me]) c9 = !!skiDocs[me].c9; } else if (prev) { ski = { ...SKI_NONE }; c9 = false; } else if (ski.on || c9) { store.saveSki(me, { ...ski, c9 }).catch(() => {}); if (c9 && !responses.find((x) => key(x.name || "") === key(me))?.cloud9) voteC9Yes(); } ls.set("aspen_ski2", ski); ls.set("aspen_c9", c9); }
     renderBudget(); renderMe(); renderPlan(true); });
   if (user?.organizer) $("nav.tabs .wrap").append(h("button", { "data-tab": "report", "aria-selected": "false" }, "Report"));
   document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
@@ -738,7 +750,7 @@ function startApp() {
     if (me && skiDocs[me]) { const next = skiFrom(skiDocs[me]); if (JSON.stringify(next) !== JSON.stringify(ski)) { ski = next; ls.set("aspen_ski2", ski); renderBudget(); }
       const d = skiDocs[me]; if ("c9" in d) { if (!!d.c9 !== c9) { c9 = !!d.c9; ls.set("aspen_c9", c9); renderBudget(); } } else if (c9 && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); } }
     else if (me && (ski.on || c9) && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
-    allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderReport(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
+    allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderReport(); if (!meDirty && (!$("#meForm") || !document.activeElement?.closest?.("#meForm"))) renderMe(); });
   store.watchSuggestions((list) => { suggestions = list; renderPlan(); renderReport(); });
   const lastTab = ls.get("aspen_tab", "budget"); showTab($(`nav.tabs button[data-tab="${lastTab}"]`) ? lastTab : "budget");
 }
