@@ -159,6 +159,23 @@
   .switches label.goldbtn:has(input:checked), .switches label.goldbtn:has(input:checked):hover { background: #d4a017; border-color: #d4a017; color: #2a1e00; }
   .switches label.goldbtn:has(input:checked)::before { background: #2a1e00; color: #f3c748; border-color: #2a1e00; }
   .switches label.goldbtn:has(input:focus-visible) { outline-color: #d4a017; }
+  /* ---- plan page: divider, pickable options, ideas ---- */
+  .cmp .thisyear { border-top: 3px solid var(--line); padding-top: 12px; }
+  @media (min-width: 680px) { .cmp .thisyear { border-top: 0; border-left: 3px solid var(--line); padding: 0 0 0 18px; } }
+  button.pick { display: block; width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+    border: 2px solid color-mix(in srgb, var(--accent) 55%, var(--line)); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 30%, transparent); transition: transform .06s, box-shadow .06s; }
+  button.pick:hover { border-color: var(--accent); } button.pick:active { transform: translateY(2px); box-shadow: none; }
+  button.pick.mine { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), 0 3px 0 color-mix(in srgb, var(--accent) 30%, transparent); }
+  .pick .blk { display: block; }
+  .pick .head { display: flex; align-items: flex-start; gap: 8px; }
+  .pick .head::before { content: ""; flex: none; width: 18px; height: 18px; margin-top: 2px; border: 2px solid var(--accent); border-radius: 50%; display: grid; place-items: center; font-size: 12px; line-height: 1; font-weight: 900; color: var(--accent-ink); }
+  .pick.mine .head::before { content: "✓"; background: var(--accent); }
+  .pickchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .pickchip { background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 2px 10px; font-size: .78rem; font-weight: 800; }
+  .ideabox { margin-top: 10px; }
+  .idea { font-size: .9rem; padding: 6px 0; border-top: 1px dashed var(--line); }
+  .ideaform { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; } .ideaform input { flex: 1 1 220px; }
+  button.btn.sm { padding: 8px 14px; font-size: .9rem; }
 </style>
 </head>
 <body>
@@ -192,7 +209,6 @@
     <button data-tab="plan">Plan</button>
     <button data-tab="me">My answers</button>
     <button data-tab="group">Group</button>
-    <button data-tab="ideas">Ideas</button>
   </div></nav>
   <main><div class="wrap">
     <div class="banner hide" id="demoBanner"></div>
@@ -200,7 +216,6 @@
     <section class="tab" id="tab-plan"></section>
     <section class="tab" id="tab-me"></section>
     <section class="tab" id="tab-group"></section>
-    <section class="tab" id="tab-ideas"></section>
   </div></main>
 </div>
 <div id="toast" role="status"></div>
@@ -249,62 +264,66 @@ const SKI = {
 };
 const CLOUD9_THIS_YEAR = 1000;      // about $685 to book + about $300 there
 
-// Last year vs this year's options. cost is per person.
+// Last year vs this year's options. Costs are per person. Last year's costs match the Budget tab.
 const PLAN = [
   { day: "Thursday, Jan 21", slots: [
-    { label: "Happy hour", last: { name: "Clark's Oyster Bar", cost: "$53", note: "Half-price martinis and oysters. It was great." }, picks: [
-      { name: "Clark's Oyster Bar", tag: "Pick", cost: "about $55", desc: "Running it back. Packed, buzzy oyster bar with a 3 to 5 PM happy hour: $10 top-shelf martinis, $12 burgers, discounted oysters and $5 oyster shooters.",
-        res: "Reservations open Dec 22 (30 days out). Booking a table for 7 around 4:30 so we have seats." } ] },
-    { label: "Dinner", last: { name: "J-Bar at Hotel Jerome", cost: "$111", note: "Walk-in only. Burgers and a classic Aspen bar." }, picks: [
+    { id: "thu-hh", label: "Happy hour", last: { name: "Clark's Oyster Bar", cost: "~$60", note: "Half-price martinis and oysters. It was great." }, picks: [
+      { name: "Clark's Oyster Bar", cost: "about $55", desc: "Running it back. Packed, buzzy oyster bar with a 3 to 5 PM happy hour: $10 top-shelf martinis, $12 burgers, discounted oysters and $5 oyster shooters.",
+        res: "Reservations open Dec 22 (30 days out). We'd book a table for 7 around 4:30 so we have seats." },
+      { name: "Las Montañas", cost: "about $35", desc: "Mexican happy hour from 3 to 5 PM: $5 crispy beef tacos, $8 chicken chalupas, $8 Mexican beer and $10 frozen margaritas. We could roll straight into dinner here.",
+        res: "Books on OpenTable for up to 20. Jan 21 should open in early December." },
+      { name: "Steak House No. 316", cost: "about $50", desc: "Cozy boutique steakhouse in a Victorian house with a bar menu: mussels and frites $25, crab cake $16, steak frites $35.",
+        res: "Bar seats are walk-in, which could be tight for 7." },
+      { name: "Ajax Tavern", cost: "about $60", desc: "Slope-side patio at the base of Aspen Mountain, known for the burger and truffle fries. More of an après scene than a deal.",
+        res: "Walk up for drinks. Reservations are for dinner only." } ] },
+    { id: "thu-din", label: "Dinner", last: { name: "J-Bar at Hotel Jerome", cost: "~$120", note: "Walk-in only. Burgers and a classic Aspen bar." }, picks: [
       { name: "Stay at Clark's", cost: "about $90 to $130", desc: "Keep the table and roll happy hour into dinner. Linguine with clams, cioppino, lobster rolls and a raw bar.", res: "Same reservation as happy hour." },
-      { name: "Las Montañas", tag: "Pick", cost: "about $75 to $110", desc: "Lively upstairs Mexican spot with mountain views and a bar. Tabletop sizzling fajitas, lobster and lamb barbacoa quesadillas, house-made tortillas and margaritas. Rated 4.8 on OpenTable and good for groups.",
+      { name: "Las Montañas", cost: "about $75 to $110", desc: "Lively upstairs Mexican spot with mountain views and a bar. Tabletop sizzling fajitas, lobster and lamb barbacoa quesadillas, house-made tortillas and margaritas. Rated 4.8 on OpenTable and good for groups.",
         res: "Books on OpenTable for up to 20. Open through Dec 31 right now, so Jan 21 should open in early December." },
-      { name: "Campo de Fiori", cost: "about $100 to $130", desc: "Backup. Loud, social Italian trattoria with pastas at $31 to $34. Open until 10:30.", res: "Books on OpenTable for up to 20." },
-      { name: "Brunelleschi's", cost: "about $50 to $85", desc: "Backup and the cheapest option. Pizza and pasta with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." } ] }
+      { name: "Campo de Fiori", cost: "about $100 to $130", desc: "Loud, social Italian trattoria with pastas at $31 to $34. Open until 10:30.", res: "Books on OpenTable for up to 20." },
+      { name: "Brunelleschi's", cost: "about $50 to $85", desc: "The cheapest option. Pizza and pasta with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." } ] }
   ] },
   { day: "Friday, Jan 22", slots: [
-    { label: "Lunch", last: { name: "Cloud Nine", cost: "$1,293", note: "Split evenly: $4,113 to reserve plus $2,352 on the day for five of us." }, picks: [
-      { name: "Cloud Nine again", tag: "Vote", cost: "about $1,000", desc: "The champagne-spraying lunch party at Aspen Highlands, 1:45 PM seating. About $685 each to book plus about $300 there. 21 and over with ID. Vote in My answers.",
+    { id: "fri-lunch", label: "Lunch", last: { name: "Cloud Nine", cost: "~$540", note: "Chris had a plug that is no longer available, and prices have increased this year." }, picks: [
+      { name: "Cloud Nine again", cost: "about $1,000", desc: "The champagne-spraying lunch party at Aspen Highlands, 1:45 PM seating. About $685 each to book plus about $300 there. 21 and over with ID. Also vote in My answers.",
         res: "Books on Tock. Not open yet; Cloud Nine opens for the season Dec 12. We need to decide soon." },
       { name: "Ski Snowmass, lunch on the mountain", cost: "about $40", desc: "The easy option if we skip Cloud Nine. Ullrhof, the mid-mountain restaurant, reopens this season after a full rebuild.", res: "No reservation needed." } ] },
-    { label: "Après", last: { name: "The Little Nell", cost: "$67", note: "Fancy après at the base of Aspen Mountain." }, picks: [
-      { name: "Venga Venga", tag: "Pick", cost: "about $50 to $80", desc: "Slope-side Mexican patio at the bottom of Fanny Hill in Snowmass with an outdoor bar, fire pits and margaritas. We ski right to it and it's a short trip back to Timbers.",
-        res: "Walk up. Calling ahead to hold space for 7." },
+    { id: "fri-apres", label: "Après", last: { name: "The Little Nell", cost: "~$70", note: "Fancy après at the base of Aspen Mountain." }, picks: [
+      { name: "Venga Venga", cost: "about $50 to $80", desc: "Slope-side Mexican patio at the bottom of Fanny Hill in Snowmass with an outdoor bar, fire pits and margaritas. We ski right to it and it's a short trip back to Timbers.",
+        res: "Walk up. We'd call ahead to hold space for 7." },
       { name: "Ajax Tavern, then the WET Deck", cost: "about $75 to $150", desc: "Only if we ski Aspen Mountain that day. Truffle fries on the Ajax patio, then the W's rooftop with a DJ, fire pits and a hot tub.", res: "The WET Deck books on OpenTable for up to 20." } ] },
-    { label: "Dinner", last: { name: "Tasters pizza delivery", cost: "$13", note: "Pizza, games and the hot tub at the house." }, picks: [
-      { name: "Tasters and game night", tag: "Pick", cost: "about $15 to $20", desc: "Same again: New York-style pizza delivered to Timbers, games and the hot tub.", res: "No reservation needed." },
+    { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the house." }, picks: [
+      { name: "Tasters and game night", cost: "about $15 to $20", desc: "Same again: New York-style pizza delivered to Timbers, games and the hot tub.", res: "No reservation needed." },
       { name: "Il Poggio or Kenichi Snowmass", cost: "about $80 to $150", desc: "If we'd rather go out without leaving Snowmass. Il Poggio is lively Italian with hearth-baked pizza; Kenichi has a sushi spot up here too.", res: "To be confirmed if we want it." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
-    { label: "Breakfast", last: { name: "Daly Diner", cost: "$21", note: "Diner breakfast in Snowmass before skiing." }, picks: [
-      { name: "Breakfast at Timbers or Daly Diner", cost: "about $0 to $25", desc: "Breakfast at the club, or the diner again.", res: "No reservation needed." } ] },
-    { label: "Lunch and après", last: { name: "Up 4 Pizza, then free après at Timbers", cost: "about $40", note: "Skied Snowmass all day." }, picks: [
-      { name: "Same again", tag: "Pick", cost: "about $40", desc: "Ski Snowmass, lunch on the mountain, then the free après at Timbers from 3:30 to 4:30 before getting ready to go out.", res: "No reservation needed." } ] },
-    { label: "Drinks before dinner", last: { name: "Aspen Brewing Co", cost: "$15", note: "Very chill, which was great." }, picks: [
-      { name: "Aspen Public House", tag: "Pick", cost: "about $20", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
+    { id: "sat-bfast", label: "Breakfast", last: { name: "Daly Diner", cost: "~$25", note: "Diner breakfast in Snowmass before skiing." }, picks: [
+      { name: "Breakfast at Timbers", cost: "free", desc: "Breakfast at the club before heading out.", res: "No reservation needed." },
+      { name: "Daly Diner", cost: "about $25", desc: "The diner again.", res: "No reservation needed." } ] },
+    { id: "sat-lunch", label: "Lunch and après", last: { name: "Up 4 Pizza, then free après at Timbers", cost: "~$40", note: "Skied Snowmass all day." }, picks: [
+      { name: "Same again", cost: "about $40", desc: "Ski Snowmass, lunch on the mountain, then the free après at Timbers from 3:30 to 4:30 before getting ready to go out.", res: "No reservation needed." } ] },
+    { id: "sat-drinks", label: "Drinks before dinner", last: { name: "Aspen Brewing Co", cost: "~$20", note: "Very chill, which was great." }, picks: [
+      { name: "Aspen Public House", cost: "about $20", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
       { name: "Aspen Brewing Co", cost: "about $15", desc: "Last year's spot: craft beer, pizza, darts and pool.", res: "Walk in." },
       { name: "J-Bar, BUCK or Stranahan's", cost: "about $20", desc: "J-Bar for one round at the Hotel Jerome (expect to stand). BUCK is an old-school, high-energy ski bar. Stranahan's is a western whiskey lodge on the mall.", res: "All walk in." } ] },
-    { label: "Dinner (the splurge)", last: { name: "Caribou Club", cost: "$223", note: "Members club. Dinner, then the DJ started at 10." }, picks: [
-      { name: "Kenichi", tag: "First choice", cost: "about $130 to $175", desc: "Sushi and Japanese with a buzzy bar scene and big tables built for 7 to 12. Miso black cod, yellowtail serrano, rolls and wagyu on a hot rock. Rated 4.8 on OpenTable and 4.4 on Google.",
-        res: "Books on OpenTable. Open through Dec 23 right now, so Jan 23 should open around Dec 13. $30 each deposit that goes toward the bill. It's closed for the off-season, so confirming it reopens." },
-      { name: "Jing", cost: "about $130 to $200", desc: "Backup with a louder room. Chinese plus sushi, good music, open until 10. Reviewers call it the place everyone ends up.", res: "Booking window to be confirmed." },
+    { id: "sat-din", label: "Dinner (the splurge)", last: { name: "Caribou Club", cost: "~$225", note: "Members club. Dinner, then the DJ started at 10." }, picks: [
+      { name: "Kenichi", cost: "about $130 to $175", desc: "Sushi and Japanese with a buzzy bar scene and big tables built for 7 to 12. Miso black cod, yellowtail serrano, rolls and wagyu on a hot rock. Rated 4.8 on OpenTable and 4.4 on Google.",
+        res: "Books on OpenTable. Open through Dec 23 right now, so Jan 23 should open around Dec 13. $30 each deposit that goes toward the bill. It's closed for the off-season, so we'd confirm it reopens." },
+      { name: "Jing", cost: "about $130 to $200", desc: "A louder room. Chinese plus sushi, good music, open until 10. Reviewers call it the place everyone ends up.", res: "Booking window to be confirmed." },
       { name: "Matsuhisa", cost: "about $175 to $250", desc: "Nobu Matsuhisa's Aspen restaurant and the big-name option. Shared plates at $26 to $39 each. Closes at 9.", res: "Downstairs room opens Dec 24 (30 days out), by phone for 7." },
       { name: "Betula", cost: "about $150 to $200", desc: "French and South American menu with a sunset view and a DJ that runs until midnight.", res: "By email. Reopens for winter Nov 26." },
       { name: "Caribou Club again", cost: "about $225", desc: "Seafood towers, caviar and club plates, and the DJ starts at 10 so we wouldn't need to go anywhere after.", res: "By arrangement, same as last year." } ] },
-    { label: "Night out", last: { name: "Stayed at Caribou Club", cost: "", note: "Dance floor picked up around 11." }, picks: [
-      { name: "Escobar, Sterling or Silver City", cost: "about $50", desc: "Escobar and Sterling are the DJ clubs. Silver City is a western saloon with live bands. Bad Harriet is the speakeasy under the Hotel Jerome with a DJ from 10, but it takes a $50 each deposit.", res: "Walk in, except Bad Harriet (Resy)." } ] }
+    { id: "sat-out", label: "Night out", last: { name: "Stayed at Caribou Club", cost: "~$50", note: "Dance floor picked up around 11." }, picks: [
+      { name: "Escobar or Sterling", cost: "about $50", desc: "The two DJ clubs.", res: "Walk in." },
+      { name: "Silver City", cost: "about $40", desc: "Western saloon with live bands.", res: "Walk in." },
+      { name: "Bad Harriet", cost: "$50 deposit each", desc: "Speakeasy under the Hotel Jerome with a DJ from 10 PM.", res: "Books on Resy." } ] }
   ] },
   { day: "Sunday, Jan 24", slots: [
-    { label: "Brunch", last: { name: "White House Tavern", cost: "$39", note: "Great sandwiches. Walk-in only." }, picks: [
-      { name: "Bear Den", tag: "Pick", cost: "about $40", desc: "Cozy all-day spot in a historic house. Brunch runs 9 AM to 3 PM and they take reservations, which helps with 7.", res: "Booking once winter hours are confirmed." },
+    { id: "sun-brunch", label: "Brunch", last: { name: "White House Tavern", cost: "~$40", note: "Great sandwiches. Walk-in only." }, picks: [
+      { name: "Bear Den", cost: "about $40", desc: "Cozy all-day spot in a historic house. Brunch runs 9 AM to 3 PM and they take reservations, which helps with 7.", res: "We'd book once winter hours are confirmed." },
       { name: "White House Tavern", cost: "about $40", desc: "Last year's brunch. Still great, but walk-in only, so there may be a wait for 7.", res: "Walk in only." },
       { name: "Mawa's Kitchen", cost: "about $45", desc: "Michelin-recommended and right by the airport, so it works on the way out.", res: "Brunch hours to be confirmed." } ] }
   ] }
-];
-const RULED_OUT = [
-  ["French Alpine Bistro and Angelo's", "Too expensive, about $175 to $250 each."],
-  ["Yuki and Hooch", "Too quiet for this group."],
-  ["Mezzaluna, ZigZag, Madame Ushi and Mi Chola", "Permanently closed."]
 ];
 
 /* ======================================================================
@@ -347,7 +366,8 @@ async function makeFirebaseStore() {
     deleteRental: (name) => F.setDoc(F.doc(db, C("rentals"), key(name)), { name, cancelled: true, updatedAt: F.serverTimestamp() }),
     watchResponses: (cb) => F.onSnapshot(F.collection(db, C("responses")), (s) => cb(s.docs.map((d) => d.data())), () => cb([])),
     watchSuggestions: (cb) => F.onSnapshot(F.query(F.collection(db, C("suggestions")), F.orderBy("createdAt", "desc")), (s) => cb(s.docs.map((d) => ({ ...d.data(), at: d.data().createdAt?.toDate?.() }))), () => cb([])),
-    addSuggestion: (name, text) => F.addDoc(F.collection(db, C("suggestions")), { name, text, createdAt: F.serverTimestamp() }),
+    addSuggestion: (name, text, slot = "") => F.addDoc(F.collection(db, C("suggestions")), { name, text, slot, createdAt: F.serverTimestamp() }),
+    savePicks: (name, picks) => F.setDoc(F.doc(db, C("responses"), "picks_" + key(name)), { type: "picks", name, picks, updatedAt: F.serverTimestamp() }),
     listRentals: async () => (await F.getDocs(F.collection(db, C("rentals")))).docs.map((d) => d.data())
   };
 }
@@ -365,7 +385,8 @@ function makeLocalStore() {
     deleteRental: async (name) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { name, cancelled: true }; ls.set("demo_rentals", all); },
     watchResponses: (cb) => { subs.responses.push(cb); emit("responses"); },
     watchSuggestions: (cb) => { subs.suggestions.push(cb); emit("suggestions"); },
-    addSuggestion: async (name, text) => { const all = ls.get("demo_suggestions", []); all.unshift({ name, text, at: new Date().toISOString() }); ls.set("demo_suggestions", all); emit("suggestions"); },
+    savePicks: async (name, picks) => { const all = ls.get("demo_responses", {}); all["picks_" + key(name)] = { type: "picks", name, picks }; ls.set("demo_responses", all); emit("responses"); },
+    addSuggestion: async (name, text, slot = "") => { const all = ls.get("demo_suggestions", []); all.unshift({ name, text, slot, at: new Date().toISOString() }); ls.set("demo_suggestions", all); emit("suggestions"); },
     listRentals: async () => Object.values(ls.get("demo_rentals", {}))
   };
 }
@@ -431,21 +452,50 @@ function renderBudget() {
 }
 
 /* ---------- plan tab ---------- */
-function renderPlan() {
+let allPicks = {}, openIdea = "", ideaDraft = "", planDirty = false;
+function togglePick(slotId, option) {
+  if (!me) { toast("Pick your name at the top first."); return; }
+  const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[slotId] || []);
+  cur.has(option) ? cur.delete(option) : cur.add(option);
+  mine[slotId] = [...cur]; allPicks = { ...allPicks, [me]: mine }; renderPlan(true);
+  store.savePicks(me, mine).catch(() => toast("Couldn't save that pick. Try again."));
+}
+function renderPlan(force) {
+  if (!force && document.activeElement?.matches?.(".ideaform input")) { planDirty = true; return; }
+  planDirty = false;
+  const pickers = (slotId, option) => PEOPLE.filter((p) => (allPicks[p]?.[slotId] || []).includes(option));
+  const ideaBox = (s) => {
+    const list = suggestions.filter((x) => x.slot === s.id), open = openIdea === s.id;
+    const form = open && h("form", { class: "ideaform" },
+      h("input", { type: "text", value: ideaDraft, maxlength: 300, placeholder: "Somewhere else we could go, or a different plan", "aria-label": "Your idea for " + s.label,
+        oninput: (e) => { ideaDraft = e.target.value; }, onblur: () => setTimeout(() => { if (planDirty) renderPlan(); }, 200) }),
+      h("button", { class: "btn sm" }, "Post"),
+      h("button", { type: "button", class: "link", onclick: () => { openIdea = ""; ideaDraft = ""; renderPlan(true); } }, "Cancel"));
+    if (form) form.addEventListener("submit", async (e) => { e.preventDefault(); const text = ideaDraft.trim(); if (!text) return;
+      try { await store.addSuggestion(me, text, s.id); openIdea = ""; ideaDraft = ""; toast("Idea posted. Thank you!"); } catch { toast("Couldn't post that. Try again."); }
+      renderPlan(true); });
+    return h("div", { class: "ideabox" },
+      list.length > 0 && h("div", {}, h("div", { class: "colhead" }, "Ideas from the group"), list.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text))),
+      form || h("button", { type: "button", class: "btn ghost sm", onclick: () => { if (!me) { toast("Pick your name at the top first."); return; } openIdea = s.id; ideaDraft = ""; renderPlan(true); setTimeout(() => $(".ideaform input")?.focus(), 0); } }, "+ Post a different idea"));
+  };
+  const other = suggestions.filter((x) => !x.slot);
   $("#tab-plan").replaceChildren(
     h("p", { class: "muted" }, "Where we went last year next to this year's options. Costs are per person. Nothing is booked yet."),
+    h("p", { style: "font-weight:700" }, "Tap an option to mark it as your pick. Tap it again to remove it."),
     ...PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
       d.slots.map((s) => h("div", { class: "cmp" },
         h("div", { class: "label" }, s.label),
-        h("div", {}, h("div", { class: "colhead" }, "Last year"),
+        h("div", { class: "lastyear" }, h("div", { class: "colhead" }, "Last year"),
           h("div", { class: "lastbox" }, h("div", {}, h("span", { class: "name" }, s.last.name), s.last.cost && h("span", { class: "cost" }, " " + s.last.cost)), h("div", { class: "small muted" }, s.last.note))),
-        h("div", {}, h("div", { class: "colhead" }, "This year's options"),
-          s.picks.map((p) => h("div", { class: "pick" },
-            h("div", {}, h("span", { class: "name" }, p.name), p.tag && h("span", { class: "tag" }, p.tag), p.cost && h("span", { class: "cost" }, p.cost)),
-            h("div", { class: "small" }, p.desc),
-            h("div", { class: "res" }, p.res)))))))),
-    h("div", { class: "card" }, h("h2", {}, "Looked at and ruled out"),
-      h("table", {}, h("tbody", {}, RULED_OUT.map(([a, b]) => h("tr", {}, h("td", {}, h("b", {}, a)), h("td", { class: "small" }, b))))))
+        h("div", { class: "thisyear" }, h("div", { class: "colhead" }, "This year's options"),
+          s.picks.map((p) => { const who = pickers(s.id, p.name), mine = who.includes(me);
+            return h("button", { type: "button", class: "pick" + (mine ? " mine" : ""), "aria-pressed": mine ? "true" : "false", onclick: () => togglePick(s.id, p.name) },
+              h("span", { class: "head" }, h("span", {}, h("span", { class: "name" }, p.name), p.cost && h("span", { class: "cost" }, p.cost))),
+              h("span", { class: "blk small" }, p.desc),
+              h("span", { class: "blk res" }, p.res),
+              who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip" }, n + "'s Pick")))); }),
+          ideaBox(s)))))),
+    other.length > 0 && h("div", { class: "card" }, h("h2", {}, "Other ideas"), other.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text)))
   );
 }
 
@@ -627,19 +677,6 @@ function renderGroup() {
   root.replaceChildren(...kids);
 }
 
-/* ---------- ideas tab ---------- */
-function renderIdeas() {
-  const ta = h("textarea", { placeholder: "A restaurant, a bar, an activity, a better plan for a day..." });
-  const form = h("form", {}, ta, h("p", { style: "margin-top:10px" }, h("button", { class: "btn" }, "Add suggestion")));
-  form.addEventListener("submit", async (e) => { e.preventDefault(); const text = ta.value.trim(); if (!text) return; if (!me) { toast("Pick your name at the top first."); return; }
-    try { await store.addSuggestion(me, text); ta.value = ""; toast("Added. Thank you!"); } catch { toast("Couldn't add that. Try again."); } });
-  $("#tab-ideas").replaceChildren(
-    h("div", { class: "card" }, h("h2", {}, "Suggestions"), h("p", { class: "muted" }, "Got an idea for the trip? Add it here and everyone can see it."), form),
-    h("div", { class: "card" }, suggestions.length ? suggestions.map((s) => h("div", { class: "sugg" }, h("div", {}, s.text),
-      h("div", { class: "small muted" }, s.name + (s.at ? " · " + new Date(s.at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "")))) : h("p", { class: "muted", style: "margin:0" }, "No suggestions yet. Be the first."))
-  );
-}
-
 /* ---------- shell ---------- */
 function showTab(name) {
   document.querySelectorAll("nav.tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === name));
@@ -651,14 +688,14 @@ function startApp() {
   started = true;
   const who = $("#who");
   who.replaceChildren(h("option", { value: "" }, "Who are you?"), ...PEOPLE.map((p) => h("option", { value: p, selected: p === me }, p)));
-  who.addEventListener("change", () => { me = who.value; ls.set("aspen_me", me); renderMe(); });
+  who.addEventListener("change", () => { me = who.value; ls.set("aspen_me", me); renderMe(); renderPlan(true); });
   document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
-  renderBudget(); renderPlan(); renderMe(); renderGroup(); renderIdeas();
+  renderBudget(); renderPlan(true); renderMe(); renderGroup();
   $("#hero").addEventListener("click", (e) => { if (!e.target.closest("select")) skiRun(); });
   startSnow();
-  store.watchResponses((list) => { responses = list; renderGroup(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
-  store.watchSuggestions((list) => { suggestions = list; renderIdeas(); });
-  showTab(ls.get("aspen_tab", "budget"));
+  store.watchResponses((all) => { const list = all.filter((d) => d.type !== "picks"); allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderGroup(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
+  store.watchSuggestions((list) => { suggestions = list; renderPlan(); });
+  const lastTab = ls.get("aspen_tab", "budget"); showTab($("#tab-" + lastTab) ? lastTab : "budget");
 }
 
 (async function init() {
