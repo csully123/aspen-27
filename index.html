@@ -65,8 +65,13 @@
   .choice .ttl { font-weight: 800; } .choice .price { font-weight: 700; color: var(--accent); margin: 2px 0 4px; }
   .choice .info { font-size: .85rem; color: var(--muted); }
   .choice.on { border-color: var(--accent); background: var(--soft); box-shadow: inset 0 0 0 1px var(--accent); }
-  .daycard h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .daycard h2 .tot { font-variant-numeric: tabular-nums; color: var(--accent); }
+  .daycard summary { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; cursor: pointer; list-style: none;
+    font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif; font-weight: 800; font-size: 1.3rem; line-height: 1.15; }
+  .daycard summary::-webkit-details-marker { display: none; }
+  .daycard summary .dname::before { content: "▾"; display: inline-block; width: 1.1em; color: var(--muted); font-size: .9em; }
+  .daycard:not([open]) summary .dname::before { content: "▸"; }
+  .daycard[open] summary { margin-bottom: 4px; }
+  .daycard summary .tot { font-variant-numeric: tabular-nums; color: var(--accent); }
   .daycard tr.off td { color: var(--muted); text-decoration: line-through; opacity: .6; }
   .daycard tr:last-child td { border-bottom: 0; }
   .skitag { font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--sky2); margin-left: 6px; }
@@ -335,6 +340,7 @@ function makeLocalStore() {
 let user = null, me = ls.get("aspen_me", ""), responses = [], suggestions = [], started = false;
 
 /* ---------- budget tab ---------- */
+let shut = ls.get("aspen_shut", {});
 let ski = ls.get("aspen_ski2", { on: false, fri: "", sat: "", lift: false, rent: false });
 function renderBudget() {
   const save = () => { ls.set("aspen_ski2", ski); renderBudget(); };
@@ -370,8 +376,8 @@ function renderBudget() {
         pill(ski.lift, "I plan on buying lift tickets for those days", (e) => { ski.lift = e.target.checked; save(); }),
         pill(ski.rent, "I'm renting gear for those days", (e) => { ski.rent = e.target.checked; save(); })),
       anyDay && h("p", { class: "small muted", style: "margin:6px 0 0" }, "Leave lift tickets off if you have an Ikon Pass. The Ikon Base Pass only covers Snowmass. Rental is about $65 a day whether you ski a full or half day.")),
-    ...BUDGET.map((d) => h("div", { class: "card daycard" },
-      h("h2", {}, h("span", {}, d.day), h("span", { class: "tot" }, money0(dayTotal(d)))),
+    ...BUDGET.map((d) => h("details", { class: "card daycard", open: !shut[d.day], ontoggle: (e) => { shut[d.day] = !e.currentTarget.open; ls.set("aspen_shut", shut); } },
+      h("summary", {}, h("span", { class: "dname" }, d.day), h("span", { class: "tot" }, money0(dayTotal(d)))),
       h("table", {}, h("tbody", {}, rowsFor(d).map((r) => h("tr", {},
         h("td", {}, r[0], r[2] && h("span", { class: "skitag" }, "ski"), r[3] && h("div", { class: "small muted" }, "(" + r[3] + ")")), h("td", { class: "num" }, money0(r[1])))))))),
     grand,
