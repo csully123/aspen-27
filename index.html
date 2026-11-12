@@ -64,9 +64,9 @@
   .daycard tr:last-child td { border-bottom: 0; }
   .skitag { font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--sky2); margin-left: 6px; }
   @media (prefers-color-scheme: dark) { .skitag { color: #8cc4f2; } }
-  .grand { background: linear-gradient(135deg, var(--sky1), var(--sky2)); color: #fff; border: 0; cursor: pointer; }
-  .grand .big { font-size: 2.4rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
-  .grand .muted { color: #d6e6f5; }
+  .grand { background: var(--card); color: var(--ink); border: 3px solid var(--accent); cursor: pointer; text-align: center; padding: 20px 16px; }
+  .grand .lbl { font-weight: 800; font-size: 1.05rem; }
+  .grand .big { font-size: 3.2rem; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; color: var(--accent); margin: 4px 0; }
 
   .cmp { display: grid; grid-template-columns: 1fr; gap: 10px; border-top: 1px solid var(--line); padding: 14px 0; }
   .cmp:first-of-type { border-top: 0; }
@@ -330,7 +330,7 @@ function renderBudget() {
   const total = BUDGET.reduce((s, d) => s + dayTotal(d), 0);
   const sw = (k, label) => h("label", {}, h("input", { type: "checkbox", checked: ski[k], onchange: (e) => { ski[k] = e.target.checked; ls.set("aspen_ski", ski); renderBudget(); } }), label);
   const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
-    h("div", { class: "muted small" }, "Your rough total for the trip"),
+    h("div", { class: "lbl" }, "Your rough total for the trip"),
     h("div", { class: "big" }, money0(total)),
     h("div", { class: "muted small" }, "Flights not included. Cloud Nine not included."));
   $("#tab-budget").replaceChildren(
