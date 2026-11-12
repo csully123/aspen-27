@@ -395,8 +395,7 @@ function renderBudget() {
     return h("button", { type: "button", class: "choice" + (on ? " on" : ""), "aria-pressed": on ? "true" : "false", onclick: () => { ski[k] = on ? "" : kind; if (!ski.fri && !ski.sat) { ski.lift = false; ski.rent = false; } save(); } },
       h("span", { class: "ttl" }, `I plan on skiing a ${kind} day on ${d.day}`),
       h("span", { class: "price" }, `Lift ticket about ${money0(d[kind])}`, kind === "full" && h("span", { class: "advnote" }, " (advanced booking can give discount)")),
-      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo),
-      h("span", { class: "tap" }, on ? "Selected. Tap to remove" : "Tap to select")); };
+      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo)); };
   const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
     h("div", { class: "lbl" }, "Your rough total for the trip"),
     h("div", { class: "big" }, money0(total)),
