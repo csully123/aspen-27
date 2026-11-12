@@ -64,7 +64,7 @@
   .choice span { display: block; }
   .choice .ttl { font-weight: 800; } .choice .price { font-weight: 700; color: var(--accent); margin: 2px 0 4px; }
   .choice .info { font-size: .85rem; color: var(--muted); }
-  .choice .adv { font-size: .85rem; color: var(--good); font-weight: 600; margin-top: 6px; }
+  p.adv { font-size: .9rem; color: var(--good); font-weight: 600; margin: 10px 0 0; }
   .choice.on { border-color: var(--accent); background: var(--soft); box-shadow: inset 0 0 0 1px var(--accent); }
   .daycard summary { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; cursor: pointer; list-style: none;
     font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif; font-weight: 800; font-size: 1.3rem; line-height: 1.15; }
@@ -213,8 +213,7 @@ const SKI = {
   rental: 65,
   fullInfo: "Ski from 9 AM until the lifts close around 3:30 PM. One ticket covers all four mountains: Snowmass, Aspen Mountain, Highlands and Buttermilk. It only works on the date you buy it for.",
   halfInfo: "Ski from 12 PM until the lifts close around 3:30 PM, on the same four mountains.",
-  fullAdvance: "Booking ahead: if you ski both days, a 2-day ticket bought by Dec 22 is up to 15% off, about $500 for both days ($250 a day). Bought at least a week ahead it's up to 10% off, about $265 a day. A single day may not be discounted. The budget uses the full price to be safe.",
-  halfAdvance: "Booking ahead: not possible. Half-day tickets are only sold at the ticket window on the day you ski, starting at noon, so plan on the full $180."
+  advance: "Booking ahead: if you ski both days, a 2-day ticket bought by Dec 22 is up to 15% off, about $500 for both days ($250 a day). Bought at least a week ahead it's up to 10% off, about $265 a day. A single day may not be discounted. The budget uses the full price to be safe. Half-day tickets can't be booked ahead: they're only sold at the ticket window on the day you ski, starting at noon, so plan on the full $180."
 };
 const CLOUD9_THIS_YEAR = 1000;      // about $685 to book + about $300 there
 
@@ -364,8 +363,7 @@ function renderBudget() {
     return h("button", { type: "button", class: "choice" + (on ? " on" : ""), "aria-pressed": on ? "true" : "false", onclick: () => { ski[k] = on ? "" : kind; if (!ski.fri && !ski.sat) { ski.lift = false; ski.rent = false; } save(); } },
       h("span", { class: "ttl" }, `I plan on skiing a ${kind} day on ${d.day}`),
       h("span", { class: "price" }, `Lift ticket about ${money0(d[kind])}`),
-      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo),
-      h("span", { class: "adv" }, kind === "full" ? SKI.fullAdvance : SKI.halfAdvance)); };
+      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo)); };
   const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
     h("div", { class: "lbl" }, "Your rough total for the trip"),
     h("div", { class: "big" }, money0(total)),
@@ -375,6 +373,7 @@ function renderBudget() {
       h("h2", {}, "What the trip costs, roughly"),
       h("p", { class: "muted" }, "Rounded from what last year cost each of us. Treat it as this year's budget. Flights aren't included."),
       h("div", { class: "switches" }, pill(ski.on, "I plan on skiing", (e) => { ski.on = e.target.checked; save(); })),
+      ski.on && h("p", { class: "adv" }, SKI.advance),
       ski.on && h("div", { class: "choices" }, choice("fri", "full"), choice("fri", "half"), choice("sat", "full"), choice("sat", "half")),
       anyDay && h("div", { class: "switches" },
         pill(ski.lift, "I plan on buying lift tickets for those days", (e) => { ski.lift = e.target.checked; save(); }),
