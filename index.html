@@ -178,6 +178,7 @@
   button.btn.sm { padding: 8px 14px; font-size: .9rem; }
   .ideabox button.btn.ghost { background: #ffffff; color: #1b5f9e; border: 2px solid #2476bd; box-shadow: 0 3px 0 #2476bd55; }
   .ideabox button.btn.ghost:hover { background: #eaf3fb; }
+  .pick.taken { opacity: .6; border: 1px dashed var(--line); }
 </style>
 </head>
 <body>
@@ -253,7 +254,7 @@ const BUDGET = [
   { day: "Thursday", rows: [
     ["Groceries for the weekend", 50], ["Happy hour", 60], ["Dinner", 120] ] },
   { day: "Friday", rows: [
-    ["Lunch on the mountain", 40], ["Après drinks", 70], ["Casual dinner in", 20] ] },
+    ["Lunch on the mountain", 40], ["Après drinks", 70], ["Dinner out", 100] ] },
   { day: "Saturday", rows: [
     ["Breakfast", 25], ["Lunch on the mountain", 40], ["Drinks before dinner", 20], ["Splurge dinner", 225], ["Going out", 50] ] },
   { day: "Sunday", rows: [ ["Brunch", 40] ] },
@@ -299,10 +300,14 @@ const PLAN = [
         res: "Walk up. We'd call ahead to hold space for 7." },
       { name: "Highlands Alehouse", cost: "about $40 to $60", desc: "The bar at the bottom of Highlands we skied into last year. Laid-back, rowdy and fun, with a big crowd coming off the mountain. (Would only go here if we chose Cloud 9.)", res: "Walk in. Reopens for winter Dec 12." },
       { name: "Ajax Tavern, then the WET Deck", cost: "about $75 to $150", desc: "Only if we ski Aspen Mountain that day. Truffle fries on the Ajax patio, then the W's rooftop with a DJ, fire pits and a hot tub.", res: "The WET Deck books on OpenTable for up to 20." } ] },
-    { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the residence." }, picks: [
-      { name: "Tasters and game night", cost: "about $20", desc: "Same again: New York-style pizza delivered to the residence, games and the hot tub.", res: "No reservation needed." },
+    { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the residence. A casual night in because we did Cloud Nine that day." }, picks: [
+      { name: "Tasters and game night", cost: "about $20", desc: "Same again: New York-style pizza delivered to the residence, games and the hot tub. Most likely if we choose Cloud 9 that day.", res: "No reservation needed." },
       { name: "Woody Creek Tavern", cost: "about $60 to $85", desc: "Dinner out at Hunter S. Thompson's old hangout: a funky, rustic roadhouse covered in memorabilia, known for burgers, fish tacos, enchiladas and margaritas. Burger and fish tacos are $27 each. About 20 minutes from Timbers, so we'd need a ride each way.", res: "Reservations for 7 to be confirmed." },
-      { name: "Il Poggio", cost: "about $80 to $120", desc: "Lively Italian in Snowmass with hearth-baked pizzas and pasta, if we'd rather go out without leaving the village.", res: "To be confirmed if we want it." } ] }
+      { name: "Il Poggio", cost: "about $80 to $120", desc: "Lively Italian in Snowmass with hearth-baked pizzas and pasta, if we'd rather go out without leaving the village.", res: "To be confirmed if we want it." },
+      { name: "Las Montañas", cost: "about $75 to $110", desc: "Lively upstairs Mexican spot in Aspen with mountain views and a bar. Tabletop sizzling fajitas, lobster and lamb barbacoa quesadillas, house-made tortillas and margaritas. Good for groups.", res: "Books on OpenTable for up to 20." },
+      { name: "Campo de Fiori", cost: "about $100 to $130", desc: "Loud, social Italian trattoria in Aspen with pastas at $31 to $34. Open until 10:30.", res: "Books on OpenTable for up to 20." },
+      { name: "J-Bar at Hotel Jerome", cost: "about $120", desc: "Burgers and a classic western bar that's been an Aspen hangout forever. Walk-in only, so there may be a wait for 7.", res: "Walk in only." },
+      { name: "Brunelleschi's", cost: "about $50 to $85", desc: "The cheapest dinner out. Pizza and pasta in Aspen with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
     { id: "sat-bfast", label: "Breakfast", last: { name: "Daly Diner", cost: "~$25", note: "Diner breakfast in Snowmass before skiing." }, picks: [
@@ -426,7 +431,7 @@ function renderBudget() {
   };
   const rowsFor = (d) => {
     let rows = [...extra(d.day), ...d.rows];
-    if (c9 && d.day === "Friday") rows = rows.flatMap((r) => r[0] === "Lunch on the mountain" ? [["Cloud 9 Lunch / Party", CLOUD9_THIS_YEAR]] : [r]);
+    if (c9 && d.day === "Friday") rows = rows.map((r) => r[0] === "Lunch on the mountain" ? ["Cloud 9 Lunch / Party", CLOUD9_THIS_YEAR] : r[0] === "Dinner out" ? ["Casual dinner in", 20, false, "A casual night in after Cloud Nine"] : r);
     return rows;
   };
   const dayTotal = (d) => rowsFor(d).reduce((a, r) => a + r[1], 0);
@@ -459,8 +464,8 @@ function renderBudget() {
     grand,
     h("div", { class: "card" },
       h("h2", {}, c9 ? "Cloud Nine is in your total 🍾" : "Cloud Nine would be extra 🍾"),
-      c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain.")
-         : h("p", {}, "The champagne lunch on Friday costs about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person and would replace lunch on the mountain."),
+      c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain, and a casual dinner in at about ", h("b", {}, "$20"), " in place of dinner out.")
+         : h("p", {}, "The champagne lunch on Friday costs about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person and would replace lunch on the mountain. We'd also stay in for a casual dinner that night, about $20 in place of about $100 for dinner out."),
       h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
       h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { c9 = e.target.checked; ls.set("aspen_c9", c9); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => {}); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
         "I want to pop champagne like I just won a championship")))
@@ -469,6 +474,7 @@ function renderBudget() {
 
 /* ---------- plan tab ---------- */
 let allPicks = {}, openIdea = "", ideaDraft = "", planDirty = false;
+const DINNERS = { "thu-din": "Thursday dinner", "fri-din": "Friday dinner", "sat-din": "Saturday dinner" };
 function togglePick(slotId, option) {
   if (!me) { toast("Pick your name at the top first."); return; }
   const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[slotId] || []);
@@ -497,7 +503,7 @@ function renderPlan(force) {
   const other = suggestions.filter((x) => !x.slot);
   $("#tab-plan").replaceChildren(
     h("p", { class: "muted" }, "Where we went last year next to this year's options. Costs are per person. Nothing is booked yet."),
-    h("p", { style: "font-weight:700" }, "Tap an option to mark it as your pick. Tap it again to remove it."),
+    h("p", { style: "font-weight:700" }, "Tap an option to mark it as your pick. Tap it again to remove it. A dinner spot you pick for one night comes off the other nights."),
     ...PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
       d.slots.map((s) => h("div", { class: "cmp" },
         h("div", { class: "label" }, s.label),
@@ -505,6 +511,12 @@ function renderPlan(force) {
           h("div", { class: "lastbox" }, h("div", {}, h("span", { class: "name" }, s.last.name), s.last.cost && h("span", { class: "cost" }, " " + s.last.cost)), h("div", { class: "small muted" }, s.last.note))),
         h("div", { class: "thisyear" }, h("div", { class: "colhead" }, "This year's options"),
           s.picks.map((p) => { const who = pickers(s.id, p.name), mine = who.includes(me);
+            const night = !mine && me && DINNERS[s.id] ? Object.keys(DINNERS).find((id) => id !== s.id && (allPicks[me]?.[id] || []).includes(p.name)) : "";
+            if (night && !who.length) return null;
+            if (night) return h("div", { class: "pick taken" },
+              h("span", { class: "head" }, h("span", {}, h("span", { class: "name" }, p.name), p.cost && h("span", { class: "cost" }, p.cost))),
+              h("span", { class: "blk small" }, "You picked this for " + DINNERS[night] + ". Remove that pick to choose it here."),
+              h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + "'s Pick"))));
             return h("button", { type: "button", class: "pick" + (mine ? " mine" : ""), "aria-pressed": mine ? "true" : "false", onclick: () => togglePick(s.id, p.name) },
               h("span", { class: "head" }, h("span", {}, h("span", { class: "name" }, p.name), p.cost && h("span", { class: "cost" }, p.cost))),
               h("span", { class: "blk small" }, p.desc),
