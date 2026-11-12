@@ -373,7 +373,7 @@ async function makeFirebaseStore() {
     signInOrganizer: (email, pw) => A.signInWithEmailAndPassword(auth, email, pw),
     signOut: () => A.signOut(auth),
     saveResponse: (name, data) => F.setDoc(F.doc(db, C("responses"), key(name)), { ...data, name, updatedAt: F.serverTimestamp() }),
-    saveRental: (name, data) => F.setDoc(F.doc(db, C("rentals"), key(name)), { ...data, name, updatedAt: F.serverTimestamp() }),
+    saveRental: (name, data) => F.setDoc(F.doc(db, C("rentals"), key(name)), { ...data, name, cancelled: false, updatedAt: F.serverTimestamp() }, { merge: true }),
     deleteRental: (name) => F.setDoc(F.doc(db, C("rentals"), key(name)), { name, cancelled: true, updatedAt: F.serverTimestamp() }),
     watchResponses: (cb) => F.onSnapshot(F.collection(db, C("responses")), (s) => cb(s.docs.map((d) => d.data())), () => cb([])),
     watchSuggestions: (cb) => F.onSnapshot(F.query(F.collection(db, C("suggestions")), F.orderBy("createdAt", "desc")), (s) => cb(s.docs.map((d) => ({ ...d.data(), at: d.data().createdAt?.toDate?.() }))), () => cb([])),
@@ -393,7 +393,7 @@ function makeLocalStore() {
     signInOrganizer: async () => { const u = { email: "organizer", organizer: true }; ls.set("demo_user", u); authCb(u); },
     signOut: async () => { ls.set("demo_user", null); authCb(null); },
     saveResponse: async (name, data) => { const all = ls.get("demo_responses", {}); all[key(name)] = { ...data, name }; ls.set("demo_responses", all); emit("responses"); },
-    saveRental: async (name, data) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { ...data, name }; ls.set("demo_rentals", all); },
+    saveRental: async (name, data) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { ...(all[key(name)] || {}), ...data, name, cancelled: false }; ls.set("demo_rentals", all); },
     deleteRental: async (name) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { name, cancelled: true }; ls.set("demo_rentals", all); },
     watchResponses: (cb) => { subs.responses.push(cb); emit("responses"); },
     watchSuggestions: (cb) => { subs.suggestions.push(cb); emit("suggestions"); },
@@ -575,6 +575,7 @@ function renderMe() {
   const rentalBox = h("div", { class: "card", id: "rentalBox" },
     h("h3", {}, "Rental details"),
     h("p", { class: "small muted" }, "This goes on the ski shop's form so your gear is waiting at Timbers. Only Chris can see these answers."),
+    Object.keys(rent).length ? null : h("p", { class: "small muted" }, "Already filled this in on another phone or computer? Leave it blank. Your earlier answers are kept, and anything you enter here updates just that item."),
     h("div", { class: "grid2" },
       field("What are you renting?", sel("r_package", RENTAL_FIELDS.packages, rent.package)),
       field("Ability", sel("r_ability", RENTAL_FIELDS.ability, rent.ability)),
@@ -626,8 +627,8 @@ function renderMe() {
       await store.saveResponse(me, data);
       if (renting) {
         const rental = { package: g("r_package"), ability: g("r_ability"), height: g("r_height"), weight: g("r_weight"), age: g("r_age"), boot: g("r_boot"), days: g("r_days"), stance: g("r_stance"), helmet: g("r_helmet"), insurance: g("r_insurance") };
-        ls.set("aspen_rental_" + key(me), rental);
-        await store.saveRental(me, rental);
+        const filled = Object.fromEntries(Object.entries(rental).filter(([, v]) => v !== "" && v != null));
+        if (Object.keys(filled).length) { ls.set("aspen_rental_" + key(me), { ...rent, ...filled }); await store.saveRental(me, filled); }
       } else if (Object.keys(rent).length) { ls.set("aspen_rental_" + key(me), {}); await store.deleteRental(me); }
       toast("Saved. Thank you, " + me + "!"); burst(innerWidth / 2, innerHeight - 90, ["❄️", "⛷️", "❄️", "🏔️"], 22, true);
     } catch (err) { console.error(err); toast("Couldn't save. Check your connection and try again."); }
