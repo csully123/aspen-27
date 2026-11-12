@@ -342,6 +342,7 @@ let user = null, me = ls.get("aspen_me", ""), responses = [], suggestions = [], 
 
 /* ---------- budget tab ---------- */
 let shut = ls.get("aspen_shut", {});
+let c9 = ls.get("aspen_c9", false);
 let ski = ls.get("aspen_ski2", { on: false, fri: "", sat: "", lift: false, rent: false });
 function renderBudget() {
   const save = () => { ls.set("aspen_ski2", ski); renderBudget(); };
@@ -354,7 +355,11 @@ function renderBudget() {
     if (ski.rent) rows.push(["Ski or board rental", SKI.rental, true]);
     return rows;
   };
-  const rowsFor = (d) => [...extra(d.day), ...d.rows];
+  const rowsFor = (d) => {
+    let rows = [...extra(d.day), ...d.rows];
+    if (c9 && d.day === "Friday") rows = rows.flatMap((r) => r[0] === "Lunch on the mountain" ? [["Cloud 9 Lunch / Party", CLOUD9_THIS_YEAR]] : [r]);
+    return rows;
+  };
   const dayTotal = (d) => rowsFor(d).reduce((a, r) => a + r[1], 0);
   const total = BUDGET.reduce((s, d) => s + dayTotal(d), 0);
   const pill = (on, label, fn) => h("label", {}, h("input", { type: "checkbox", checked: on, onchange: fn }), label);
@@ -366,7 +371,7 @@ function renderBudget() {
   const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
     h("div", { class: "lbl" }, "Your rough total for the trip"),
     h("div", { class: "big" }, money0(total)),
-    h("div", { class: "muted small" }, "Flights not included. Cloud Nine not included."));
+    h("div", { class: "muted small" }, c9 ? "Flights not included. Cloud Nine included." : "Flights not included. Cloud Nine not included."));
   $("#tab-budget").replaceChildren(
     h("div", { class: "card" },
       h("h2", {}, "What the trip costs, roughly"),
@@ -383,10 +388,12 @@ function renderBudget() {
         h("td", {}, r[0], r[2] && h("span", { class: "skitag" }, "ski"), r[3] && h("div", { class: "small muted" }, "(" + r[3] + ")")), h("td", { class: "num" }, money0(r[1])))))))),
     grand,
     h("div", { class: "card" },
-      h("h2", {}, "Cloud Nine would be extra 🍾"),
-      h("p", {}, "The champagne lunch on Friday would add about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person, which would make your total about ", h("b", {}, money0(total + CLOUD9_THIS_YEAR)), "."),
+      h("h2", {}, c9 ? "Cloud Nine is in your total 🍾" : "Cloud Nine would be extra 🍾"),
+      c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain.")
+         : h("p", {}, "The champagne lunch on Friday costs about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person and would replace lunch on the mountain."),
       h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
-      h("button", { class: "btn ghost", type: "button", onclick: (e) => spray(e.currentTarget) }, "Pop the champagne"))
+      h("div", { class: "switches" }, h("label", {}, h("input", { type: "checkbox", checked: c9, onchange: (e) => { c9 = e.target.checked; ls.set("aspen_c9", c9); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); toast("Champagne showers!"); } } }),
+        "I want to pop champagne like I just won a championship")))
   );
 }
 
