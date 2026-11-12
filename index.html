@@ -176,6 +176,8 @@
   .idea { font-size: .9rem; padding: 6px 0; border-top: 1px dashed var(--line); }
   .ideaform { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; } .ideaform input { flex: 1 1 220px; }
   button.btn.sm { padding: 8px 14px; font-size: .9rem; }
+  .ideabox button.btn.ghost { background: #ffffff; color: #1b5f9e; border: 2px solid #2476bd; box-shadow: 0 3px 0 #2476bd55; }
+  .ideabox button.btn.ghost:hover { background: #eaf3fb; }
 </style>
 </head>
 <body>
@@ -208,14 +210,14 @@
     <button data-tab="budget" aria-selected="true">Budget</button>
     <button data-tab="plan">Plan</button>
     <button data-tab="me">My answers</button>
-    <button data-tab="group">Group</button>
   </div></nav>
   <main><div class="wrap">
     <div class="banner hide" id="demoBanner"></div>
     <section class="tab on" id="tab-budget"></section>
     <section class="tab" id="tab-plan"></section>
     <section class="tab" id="tab-me"></section>
-    <section class="tab" id="tab-group"></section>
+    <section class="tab" id="tab-report"></section>
+    <div id="orgFoot"></div>
   </div></main>
 </div>
 <div id="toast" role="status"></div>
@@ -412,7 +414,7 @@ const SKI_NONE = { on: false, fri: "", sat: "", lift: false, rent: false };
 const skiFrom = (d) => ({ on: !!d.on, fri: d.fri || "", sat: d.sat || "", lift: !!d.lift, rent: !!d.rent });
 let ski = ls.get("aspen_ski2", { ...SKI_NONE }), skiDocs = {}, skiSynced = false;
 function renderBudget() {
-  const save = () => { ls.set("aspen_ski2", ski); if (me) store.saveSki(me, ski).catch(() => toast("Couldn't save your skiing choices. Try again.")); renderBudget(); renderMe(); };
+  const save = () => { ls.set("aspen_ski2", ski); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => toast("Couldn't save your skiing choices. Try again.")); renderBudget(); renderMe(); };
   const anyDay = ski.on && (ski.fri || ski.sat);
   const extra = (dayName) => {
     const k = Object.keys(SKI.days).find((x) => SKI.days[x].day === dayName), kind = k && ski.on && ski[k];
@@ -460,7 +462,7 @@ function renderBudget() {
       c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain.")
          : h("p", {}, "The champagne lunch on Friday costs about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person and would replace lunch on the mountain."),
       h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
-      h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { c9 = e.target.checked; ls.set("aspen_c9", c9); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
+      h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { c9 = e.target.checked; ls.set("aspen_c9", c9); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => {}); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
         "I want to pop champagne like I just won a championship")))
   );
 }
@@ -634,57 +636,68 @@ function renderMe() {
   root.replaceChildren(form);
 }
 
-/* ---------- group tab ---------- */
-function renderGroup() {
-  const root = $("#tab-group");
+/* ---------- organizer report (only Chris's login sees this) ---------- */
+function reportSections() {
   const by = Object.fromEntries(responses.map((r) => [key(r.name || ""), r]));
-  const tally = (k) => { const m = {}; for (const r of responses) if (r[k]) (m[r[k]] ||= []).push(r.name); return m; };
-  const tallyBlock = (title, k) => { const m = tally(k); return h("div", { class: "tally" }, h("b", {}, title),
-    Object.keys(m).length ? Object.entries(m).map(([o, names]) => h("div", { class: "small" }, `${o}: ${names.join(", ")}`)) : h("div", { class: "small muted" }, "No answers yet")); };
-  const sk = Object.values(skiDocs), skiNames = (fn) => { const n = PEOPLE.filter((p) => sk.some((d) => d.name === p && fn(d))); return n.length ? n.join(", ") : "nobody yet"; };
-  const skis = (d) => d.on && (d.fri || d.sat);
-  const legs = (which) => responses.filter((r) => r[which] && (r[which].flight || r[which].time || r[which].airport))
-    .sort((x, y) => (x[which].date || "").localeCompare(y[which].date || ""));
-  const fmt = (leg) => [leg.date && new Date(leg.date + "T12:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }), leg.time && new Date("2027-01-01T" + leg.time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })].filter(Boolean).join(", ") || "Date TBD";
-  const legTable = (which) => { const rows = legs(which); return rows.length ? h("div", { class: "scroll" }, h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Who"), h("th", {}, "Date"), h("th", {}, "Airport"), h("th", {}, "Flight"))),
-    h("tbody", {}, rows.map((r) => h("tr", {}, h("td", {}, r.name), h("td", {}, fmt(r[which])), h("td", {}, r[which].airport || ""), h("td", {}, r[which].flight || "")))))) : h("p", { class: "small muted" }, "No flights entered yet."); };
-
-  const kids = [
-    h("div", { class: "card" }, h("h2", {}, "Who's answered"),
-      h("div", { class: "chips" }, PEOPLE.map((p) => h("span", { class: "chip" + (by[key(p)] ? " done" : "") }, p)))),
-    h("div", { class: "card" }, h("h2", {}, "Where everyone stands"),
-      tallyBlock("One splurge dinner", "splurge"), tallyBlock("Cloud Nine on Friday", "cloud9"), tallyBlock("Sushi for one of our dinners", "sushi"),
-      h("div", { class: "tally" }, h("b", {}, "Skiing (from each person's Budget tab)"),
-        [["Friday full day", (d) => d.on && d.fri === "full"], ["Friday half day", (d) => d.on && d.fri === "half"], ["Saturday full day", (d) => d.on && d.sat === "full"], ["Saturday half day", (d) => d.on && d.sat === "half"],
-         ["Buying lift tickets", (d) => skis(d) && d.lift], ["Skiing but not buying lift tickets", (d) => skis(d) && !d.lift], ["Renting gear", (d) => skis(d) && d.rent]]
-          .map(([label, fn]) => h("div", { class: "small" }, `${label}: ${skiNames(fn)}`))),
-      responses.some((r) => r.diet) && h("div", { class: "tally" }, h("b", {}, "Food notes"), responses.filter((r) => r.diet).map((r) => h("div", { class: "small" }, `${r.name}: ${r.diet}`)))),
-    h("div", { class: "card" }, h("h2", {}, "Flights"), h("p", { class: "small muted" }, "Timbers handles airport pickups. Sorted by date."), h("h3", {}, "Arrivals"), legTable("arrive"), h("h3", { style: "margin-top:14px" }, "Departures"), legTable("depart"))
-  ];
-  const orgCard = h("div", { class: "card" }, h("h2", {}, "Organizer"));
-  if (user?.organizer) {
-    const notes = responses.filter((r) => r.notes);
-    const out = h("div", {}, h("p", { class: "small muted" }, "Loading rentals..."));
-    orgCard.append(...[h("p", { class: "small muted" }, "Only you can see this part."),
-      notes.length ? h("div", { class: "tally" }, h("b", {}, "Notes for you"), notes.map((r) => h("div", { class: "small" }, `${r.name}: ${r.notes}`))) : null,
-      h("h3", { style: "margin:10px 0 6px" }, "Rental details"), out,
-      h("p", { style: "margin-top:12px" }, h("button", { class: "link", onclick: () => store.signOut().then(() => location.reload()) }, "Sign out"))].filter(Boolean));
-    store.listRentals().then((list) => {
-      const rows = list.filter((x) => !x.cancelled);
-      if (!rows.length) { out.replaceChildren(h("p", { class: "small muted" }, "Nobody has entered rental details yet.")); return; }
-      const cols = [["Name", "name"], ["Weight", "weight"], ["Height", "height"], ["Age", "age"], ["Ability", "ability"], ["Package", "package"], ["Boot/shoe", "boot"], ["Stance", "stance"], ["Insurance", "insurance"], ["Helmet", "helmet"], ["Days", "days"]];
-      const text = [cols.map((c) => c[0]).join("\t"), ...rows.map((x) => cols.map((c) => x[c[1]] || "").join("\t"))].join("\n");
-      out.replaceChildren(h("div", { class: "scroll" }, h("table", {}, h("thead", {}, h("tr", {}, cols.map((c) => h("th", {}, c[0])))), h("tbody", {}, rows.map((x) => h("tr", {}, cols.map((c) => h("td", {}, x[c[1]] || ""))))))),
-        h("p", { style: "margin-top:10px" }, h("button", { class: "btn ghost", onclick: () => navigator.clipboard.writeText(text).then(() => toast("Copied. Paste into the rental form.")) }, "Copy for the rental form")));
-    }).catch(() => out.replaceChildren(h("p", { class: "small muted" }, "Couldn't load rentals. Check that the organizer email in your Firestore rules matches this login.")));
-  } else {
-    const f = h("form", { class: "hide" }, h("div", { class: "grid2" }, field("Email", h("input", { type: "email", name: "email", autocomplete: "username" })), field("Password", h("input", { type: "password", name: "pw", autocomplete: "current-password" }))),
-      h("p", { style: "margin-top:10px" }, h("button", { class: "btn ghost" }, "Sign in as organizer")), h("div", { class: "small", id: "orgErr", style: "color:#c0392b" }));
-    f.addEventListener("submit", async (e) => { e.preventDefault(); try { await store.signInOrganizer(f.email.value.trim(), f.pw.value); location.reload(); } catch { $("#orgErr").textContent = "That didn't work."; } });
-    orgCard.append(h("p", { class: "small muted" }, "Rental details and private notes are only visible to Chris."), h("button", { class: "link", onclick: () => f.classList.toggle("hide") }, "Chris: sign in to see them"), f);
+  const done = PEOPLE.filter((p) => by[key(p)]), waiting = PEOPLE.filter((p) => !by[key(p)]);
+  const list = (a) => a.length ? a.join(", ") : "nobody yet";
+  const vote = (title, k) => { const m = {}; for (const r of responses) if (r[k]) (m[r[k]] ||= []).push(r.name);
+    return Object.keys(m).length ? Object.entries(m).map(([o, n]) => `${title}: ${o} (${n.length}): ${n.join(", ")}`) : [`${title}: no answers yet`]; };
+  const sk = Object.values(skiDocs), skis = (d) => d.on && (d.fri || d.sat);
+  const skiNames = (fn) => list(PEOPLE.filter((p) => sk.some((d) => d.name === p && fn(d))));
+  const picks = [];
+  for (const d of PLAN) for (const s of d.slots) for (const o of s.picks) {
+    const who = PEOPLE.filter((p) => (allPicks[p]?.[s.id] || []).includes(o.name));
+    if (who.length) picks.push(`${d.day.split(",")[0]} ${s.label.toLowerCase()}: ${o.name} (${who.length}): ${who.join(", ")}`);
   }
-  kids.push(orgCard);
-  root.replaceChildren(...kids);
+  const slotName = (id) => { for (const d of PLAN) for (const s of d.slots) if (s.id === id) return `${d.day.split(",")[0]} ${s.label.toLowerCase()}`; return "General"; };
+  const ideas = [...suggestions].reverse().map((x) => `${slotName(x.slot)}: ${x.name}: ${x.text}`);
+  const legs = (which) => responses.filter((r) => r[which] && (r[which].flight || r[which].airport)).sort((x, y) => (x[which].date || "").localeCompare(y[which].date || ""))
+    .map((r) => `${r.name}: ${[r[which].date, r[which].airport, r[which].flight].filter(Boolean).join(", ")}`);
+  const extra = responses.filter((r) => r.diet || r.notes).map((r) => `${r.name}: ${[r.diet, r.notes].filter(Boolean).join(" / ")}`);
+  return [
+    { title: "Who has saved My answers", lines: [`Done (${done.length} of ${PEOPLE.length}): ${list(done)}`, `Still waiting on: ${list(waiting)}`] },
+    { title: "Votes", lines: [...vote("Splurge dinner", "splurge"), ...vote("Cloud Nine on Friday", "cloud9"), ...vote("Sushi for a dinner", "sushi"),
+      `Turned on the champagne button on the Budget tab: ${skiNames((d) => d.c9)}`] },
+    { title: "Skiing (from each person's Budget tab)", lines: [
+      `Friday full day: ${skiNames((d) => d.on && d.fri === "full")}`, `Friday half day: ${skiNames((d) => d.on && d.fri === "half")}`,
+      `Saturday full day: ${skiNames((d) => d.on && d.sat === "full")}`, `Saturday half day: ${skiNames((d) => d.on && d.sat === "half")}`,
+      `Buying lift tickets: ${skiNames((d) => skis(d) && d.lift)}`, `Skiing but not buying lift tickets: ${skiNames((d) => skis(d) && !d.lift)}`,
+      `Renting gear: ${skiNames((d) => skis(d) && d.rent)}`, `Not skiing or no answer: ${list(PEOPLE.filter((p) => !sk.some((d) => d.name === p && skis(d))))}`] },
+    { title: "Picks on the Plan tab", lines: picks.length ? picks : ["No picks yet"] },
+    { title: "Ideas people posted", lines: ideas.length ? ideas : ["No ideas yet"] },
+    { title: "Arriving flights", lines: legs("arrive").length ? legs("arrive") : ["No flights entered yet"] },
+    { title: "Departing flights", lines: legs("depart").length ? legs("depart") : ["No flights entered yet"] },
+    ...(extra.length ? [{ title: "Older notes", lines: extra }] : [])
+  ];
+}
+function renderReport() {
+  const root = $("#tab-report"); if (!root || !user?.organizer) return;
+  const secs = reportSections();
+  const text = "ASPEN 2027 REPORT\n\n" + secs.map((s) => s.title.toUpperCase() + "\n" + s.lines.map((l) => "- " + l).join("\n")).join("\n\n");
+  const out = h("div", {}, h("p", { class: "small muted" }, "Loading rentals..."));
+  root.replaceChildren(
+    h("div", { class: "card" }, h("h2", {}, "Summary report"), h("p", { class: "small muted" }, "Only your login can see this tab. It updates live as people answer."),
+      h("button", { type: "button", class: "btn", onclick: () => navigator.clipboard.writeText(text).then(() => toast("Report copied.")) }, "Copy the full report")),
+    ...secs.map((s) => h("div", { class: "card" }, h("h2", {}, s.title), s.lines.map((l) => h("div", { class: "idea" }, l)))),
+    h("div", { class: "card" }, h("h2", {}, "Rental details"), out),
+    h("p", {}, h("button", { class: "link", onclick: () => store.signOut().then(() => location.reload()) }, "Sign out"))
+  );
+  store.listRentals().then((all) => {
+    const rows = all.filter((x) => !x.cancelled);
+    if (!rows.length) { out.replaceChildren(h("p", { class: "small muted" }, "Nobody has entered rental details yet.")); return; }
+    const cols = [["Name", "name"], ["Weight", "weight"], ["Height", "height"], ["Age", "age"], ["Ability", "ability"], ["Package", "package"], ["Boot/shoe", "boot"], ["Stance", "stance"], ["Insurance", "insurance"], ["Helmet", "helmet"], ["Days", "days"]];
+    const rtext = [cols.map((c) => c[0]).join("\t"), ...rows.map((x) => cols.map((c) => x[c[1]] || "").join("\t"))].join("\n");
+    out.replaceChildren(h("div", { class: "scroll" }, h("table", {}, h("thead", {}, h("tr", {}, cols.map((c) => h("th", {}, c[0])))), h("tbody", {}, rows.map((x) => h("tr", {}, cols.map((c) => h("td", {}, x[c[1]] || ""))))))),
+      h("p", { style: "margin-top:10px" }, h("button", { class: "btn ghost", onclick: () => navigator.clipboard.writeText(rtext).then(() => toast("Copied. Paste into the rental form.")) }, "Copy for the rental form")));
+  }).catch(() => out.replaceChildren(h("p", { class: "small muted" }, "Couldn't load rentals. Check that the organizer email in your Firestore rules matches this login.")));
+}
+function renderOrgFoot() {
+  if (user?.organizer) { $("#orgFoot").replaceChildren(); return; }
+  const f = h("form", { class: "card hide", style: "margin-top:10px" }, h("div", { class: "grid2" }, field("Email", h("input", { type: "email", name: "email", autocomplete: "username" })), field("Password", h("input", { type: "password", name: "pw", autocomplete: "current-password" }))),
+    h("p", { style: "margin:10px 0 0" }, h("button", { class: "btn sm" }, "Sign in")), h("div", { class: "small", id: "orgErr", style: "color:#c0392b" }));
+  f.addEventListener("submit", async (e) => { e.preventDefault(); try { await store.signInOrganizer(f.email.value.trim(), f.pw.value); location.reload(); } catch { $("#orgErr").textContent = "That didn't work."; } });
+  $("#orgFoot").replaceChildren(h("p", { class: "small muted", style: "text-align:center;margin-top:24px" }, h("button", { class: "link", style: "font-weight:400;color:inherit", onclick: () => f.classList.toggle("hide") }, "Organizer sign in")), f);
 }
 
 /* ---------- shell ---------- */
@@ -694,24 +707,27 @@ function showTab(name) {
   ls.set("aspen_tab", name); window.scrollTo(0, 0);
 }
 function startApp() {
-  if (started) { renderGroup(); return; }
+  if (started) { renderReport(); return; }
   started = true;
   const who = $("#who");
   who.replaceChildren(h("option", { value: "" }, "Who are you?"), ...PEOPLE.map((p) => h("option", { value: p, selected: p === me }, p)));
   who.addEventListener("change", () => { const prev = me; me = who.value; ls.set("aspen_me", me);
-    if (me) { if (skiDocs[me]) ski = skiFrom(skiDocs[me]); else if (prev) ski = { ...SKI_NONE }; else if (ski.on) store.saveSki(me, ski).catch(() => {}); ls.set("aspen_ski2", ski); }
+    if (me) { if (skiDocs[me]) { ski = skiFrom(skiDocs[me]); if ("c9" in skiDocs[me]) c9 = !!skiDocs[me].c9; } else if (prev) { ski = { ...SKI_NONE }; c9 = false; } else if (ski.on || c9) store.saveSki(me, { ...ski, c9 }).catch(() => {}); ls.set("aspen_ski2", ski); ls.set("aspen_c9", c9); }
     renderBudget(); renderMe(); renderPlan(true); });
+  if (user?.organizer) $("nav.tabs .wrap").append(h("button", { "data-tab": "report", "aria-selected": "false" }, "Report"));
   document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
-  renderBudget(); renderPlan(true); renderMe(); renderGroup();
+  renderOrgFoot();
+  renderBudget(); renderPlan(true); renderMe(); renderReport();
   $("#hero").addEventListener("click", (e) => { if (!e.target.closest("select")) skiRun(); });
   startSnow();
   store.watchResponses((all) => { const list = all.filter((d) => !d.type);
     skiDocs = Object.fromEntries(all.filter((d) => d.type === "ski").map((d) => [d.name, d]));
-    if (me && skiDocs[me]) { const next = skiFrom(skiDocs[me]); if (JSON.stringify(next) !== JSON.stringify(ski)) { ski = next; ls.set("aspen_ski2", ski); renderBudget(); } }
-    else if (me && ski.on && !skiSynced) { skiSynced = true; store.saveSki(me, ski).catch(() => {}); }
-    allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderGroup(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
-  store.watchSuggestions((list) => { suggestions = list; renderPlan(); });
-  const lastTab = ls.get("aspen_tab", "budget"); showTab($("#tab-" + lastTab) ? lastTab : "budget");
+    if (me && skiDocs[me]) { const next = skiFrom(skiDocs[me]); if (JSON.stringify(next) !== JSON.stringify(ski)) { ski = next; ls.set("aspen_ski2", ski); renderBudget(); }
+      const d = skiDocs[me]; if ("c9" in d) { if (!!d.c9 !== c9) { c9 = !!d.c9; ls.set("aspen_c9", c9); renderBudget(); } } else if (c9 && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); } }
+    else if (me && (ski.on || c9) && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
+    allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderReport(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
+  store.watchSuggestions((list) => { suggestions = list; renderPlan(); renderReport(); });
+  const lastTab = ls.get("aspen_tab", "budget"); showTab($(`nav.tabs button[data-tab="${lastTab}"]`) ? lastTab : "budget");
 }
 
 (async function init() {
