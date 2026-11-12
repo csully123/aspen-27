@@ -92,7 +92,7 @@
   .pick:last-child { margin-bottom: 0; }
   .pick .name { font-weight: 800; } .pick .cost { font-weight: 700; color: var(--accent); margin-left: 6px; white-space: nowrap; }
   .pick .tag { display: inline-block; font-size: .68rem; font-weight: 800; color: var(--gold-ink); background: var(--gold); border-radius: 999px; padding: 1px 8px; text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; vertical-align: 2px; }
-  .pick .res { font-size: .875rem; margin-top: 4px; color: var(--good); font-weight: 600; }
+  .pick .res { font-size: .875rem; margin-top: 4px; color: var(--muted); font-weight: 400; font-style: italic; }
 
   label.q { display: block; font-weight: 700; margin: 16px 0 6px; }
   .hint { font-weight: 400; color: var(--muted); font-size: .875rem; display: block; margin-top: 2px; position: static; }
@@ -291,10 +291,13 @@ const PLAN = [
     { id: "fri-apres", label: "Après", last: { name: "The Little Nell", cost: "~$70", note: "Fancy après at the base of Aspen Mountain." }, picks: [
       { name: "Venga Venga", cost: "about $50 to $80", desc: "Slope-side Mexican patio at the bottom of Fanny Hill in Snowmass with an outdoor bar, fire pits and margaritas. We ski right to it and it's a short trip back to Timbers.",
         res: "Walk up. We'd call ahead to hold space for 7." },
+      { name: "Highlands Alehouse", cost: "about $40 to $60", desc: "The bar at the bottom of Highlands we skied into last year. Laid-back, rowdy and fun, with a big crowd coming off the mountain. (Would only go here if we chose Cloud 9.)", res: "Walk in. Reopens for winter Dec 12." },
       { name: "Ajax Tavern, then the WET Deck", cost: "about $75 to $150", desc: "Only if we ski Aspen Mountain that day. Truffle fries on the Ajax patio, then the W's rooftop with a DJ, fire pits and a hot tub.", res: "The WET Deck books on OpenTable for up to 20." } ] },
     { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the house." }, picks: [
       { name: "Tasters and game night", cost: "about $15 to $20", desc: "Same again: New York-style pizza delivered to Timbers, games and the hot tub.", res: "No reservation needed." },
-      { name: "Il Poggio or Kenichi Snowmass", cost: "about $80 to $150", desc: "If we'd rather go out without leaving Snowmass. Il Poggio is lively Italian with hearth-baked pizza; Kenichi has a sushi spot up here too.", res: "To be confirmed if we want it." } ] }
+      { name: "Woody Creek Tavern and game night", cost: "about $40 to $55", desc: "Burgers, fish tacos and enchiladas from Hunter S. Thompson's old hangout, eaten at the house with games and the hot tub. Burger and fish tacos are $27 each.", res: "They take online orders, but delivery isn't confirmed. Someone would likely need to pick it up, about 20 minutes each way." },
+      { name: "Il Poggio", cost: "about $80 to $120", desc: "Lively Italian in Snowmass with hearth-baked pizzas and pasta, if we'd rather go out without leaving the village.", res: "To be confirmed if we want it." },
+      { name: "Kenichi Snowmass", cost: "about $100 to $150", desc: "The Snowmass outpost of Kenichi, for sushi without the drive to Aspen.", res: "To be confirmed if we want it." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
     { id: "sat-bfast", label: "Breakfast", last: { name: "Daly Diner", cost: "~$25", note: "Diner breakfast in Snowmass before skiing." }, picks: [
@@ -305,7 +308,9 @@ const PLAN = [
     { id: "sat-drinks", label: "Drinks before dinner", last: { name: "Aspen Brewing Co", cost: "~$20", note: "Very chill, which was great." }, picks: [
       { name: "Aspen Public House", cost: "about $20", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
       { name: "Aspen Brewing Co", cost: "about $15", desc: "Last year's spot: craft beer, pizza, darts and pool.", res: "Walk in." },
-      { name: "J-Bar, BUCK or Stranahan's", cost: "about $20", desc: "J-Bar for one round at the Hotel Jerome (expect to stand). BUCK is an old-school, high-energy ski bar. Stranahan's is a western whiskey lodge on the mall.", res: "All walk in." } ] },
+      { name: "J-Bar", cost: "about $20", desc: "The classic western bar at the Hotel Jerome and a longtime town hangout. Good for one round, but expect to stand on a Saturday.", res: "Walk in only." },
+      { name: "BUCK", cost: "about $20", desc: "Old-school ski bar with a high-energy crowd, and cheap by Aspen standards.", res: "Walk in." },
+      { name: "Stranahan's Whiskey Lodge", cost: "about $20", desc: "Western-style whiskey and cocktail bar on the walking mall.", res: "Walk in." } ] },
     { id: "sat-din", label: "Dinner (the splurge)", last: { name: "Caribou Club", cost: "~$225", note: "Members club. Dinner, then the DJ started at 10." }, picks: [
       { name: "Kenichi", cost: "about $130 to $175", desc: "Sushi and Japanese with a buzzy bar scene and big tables built for 7 to 12. Miso black cod, yellowtail serrano, rolls and wagyu on a hot rock. Rated 4.8 on OpenTable and 4.4 on Google.",
         res: "Books on OpenTable. Open through Dec 23 right now, so Jan 23 should open around Dec 13. $30 each deposit that goes toward the bill. It's closed for the off-season, so we'd confirm it reopens." },
@@ -495,7 +500,7 @@ function renderPlan(force) {
               h("span", { class: "blk res" }, p.res),
               who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip" }, n + "'s Pick")))); }),
           ideaBox(s)))))),
-    other.length > 0 && h("div", { class: "card" }, h("h2", {}, "Other ideas"), other.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text)))
+    ...(other.length > 0 ? [h("div", { class: "card" }, h("h2", {}, "Other ideas"), other.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text)))] : [])
   );
 }
 
