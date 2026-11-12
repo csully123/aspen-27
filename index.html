@@ -295,7 +295,7 @@ const PLAN = [
       { name: "Ajax Tavern, then the WET Deck", cost: "about $75 to $150", desc: "Only if we ski Aspen Mountain that day. Truffle fries on the Ajax patio, then the W's rooftop with a DJ, fire pits and a hot tub.", res: "The WET Deck books on OpenTable for up to 20." } ] },
     { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the residence." }, picks: [
       { name: "Tasters and game night", cost: "about $20", desc: "Same again: New York-style pizza delivered to the residence, games and the hot tub.", res: "No reservation needed." },
-      { name: "Woody Creek Tavern", cost: "about $60 to $85", desc: "Dinner out at Hunter S. Thompson's old hangout: a funky, rustic roadhouse covered in memorabilia, known for burgers, fish tacos, enchiladas and margaritas. Burger and fish tacos are $27 each.", res: "About 20 minutes from Timbers, so we'd need a ride each way. Reservations for 7 to be confirmed." },
+      { name: "Woody Creek Tavern", cost: "about $60 to $85", desc: "Dinner out at Hunter S. Thompson's old hangout: a funky, rustic roadhouse covered in memorabilia, known for burgers, fish tacos, enchiladas and margaritas. Burger and fish tacos are $27 each. About 20 minutes from Timbers, so we'd need a ride each way.", res: "Reservations for 7 to be confirmed." },
       { name: "Il Poggio", cost: "about $80 to $120", desc: "Lively Italian in Snowmass with hearth-baked pizzas and pasta, if we'd rather go out without leaving the village.", res: "To be confirmed if we want it." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
@@ -497,7 +497,6 @@ function renderPlan(force) {
             return h("button", { type: "button", class: "pick" + (mine ? " mine" : ""), "aria-pressed": mine ? "true" : "false", onclick: () => togglePick(s.id, p.name) },
               h("span", { class: "head" }, h("span", {}, h("span", { class: "name" }, p.name), p.cost && h("span", { class: "cost" }, p.cost))),
               h("span", { class: "blk small" }, p.desc),
-              h("span", { class: "blk res" }, p.res),
               who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip" }, n + "'s Pick")))); }),
           ideaBox(s)))))),
     ...(other.length > 0 ? [h("div", { class: "card" }, h("h2", {}, "Other ideas"), other.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text)))] : [])
