@@ -64,6 +64,7 @@
   .choice span { display: block; }
   .choice .ttl { font-weight: 800; } .choice .price { font-weight: 700; color: var(--accent); margin: 2px 0 4px; }
   .choice .info { font-size: .85rem; color: var(--muted); }
+  .choice .adv { font-size: .85rem; color: var(--good); font-weight: 600; margin-top: 6px; }
   .choice.on { border-color: var(--accent); background: var(--soft); box-shadow: inset 0 0 0 1px var(--accent); }
   .daycard summary { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; cursor: pointer; list-style: none;
     font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif; font-weight: 800; font-size: 1.3rem; line-height: 1.15; }
@@ -211,7 +212,9 @@ const SKI = {
   days: { fri: { day: "Friday", full: 280, half: 180 }, sat: { day: "Saturday", full: 310, half: 180 } },
   rental: 65,
   fullInfo: "Ski from 9 AM until the lifts close around 3:30 PM. One ticket covers all four mountains: Snowmass, Aspen Mountain, Highlands and Buttermilk. It only works on the date you buy it for.",
-  halfInfo: "Ski from 12 PM until the lifts close around 3:30 PM, on the same four mountains."
+  halfInfo: "Ski from 12 PM until the lifts close around 3:30 PM, on the same four mountains.",
+  fullAdvance: "Booking ahead: if you ski both days, a 2-day ticket bought by Dec 22 is up to 15% off, roughly $250 a day. Bought at least a week ahead it's up to 10% off, roughly $265 a day. The budget uses the full price to be safe.",
+  halfAdvance: "Booking ahead: Aspen doesn't list an advance discount for half-day tickets, so plan on the full $180."
 };
 const CLOUD9_THIS_YEAR = 1000;      // about $685 to book + about $300 there
 
@@ -361,7 +364,8 @@ function renderBudget() {
     return h("button", { type: "button", class: "choice" + (on ? " on" : ""), "aria-pressed": on ? "true" : "false", onclick: () => { ski[k] = on ? "" : kind; if (!ski.fri && !ski.sat) { ski.lift = false; ski.rent = false; } save(); } },
       h("span", { class: "ttl" }, `I plan on skiing a ${kind} day on ${d.day}`),
       h("span", { class: "price" }, `Lift ticket about ${money0(d[kind])}`),
-      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo)); };
+      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo),
+      h("span", { class: "adv" }, kind === "full" ? SKI.fullAdvance : SKI.halfAdvance)); };
   const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
     h("div", { class: "lbl" }, "Your rough total for the trip"),
     h("div", { class: "big" }, money0(total)),
