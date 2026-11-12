@@ -7,67 +7,96 @@
 <title>Aspen 2027</title>
 <style>
   :root {
-    --bg: #f4f1ea; --card: #ffffff; --ink: #1c2530; --muted: #5f6b78; --line: #ddd7ca;
-    --accent: #b4532a; --accent-ink: #ffffff; --soft: #f0e6da; --good: #2f6b4f; --warn: #9a6a00;
-    --pine: #24403a;
+    --bg: #eef4fa; --card: #ffffff; --ink: #14304a; --muted: #5b748a; --line: #d3e1ee;
+    --accent: #ee5a36; --accent-ink: #ffffff; --soft: #e7f1fa; --good: #2b7a5a; --gold: #f2b632;
+    --sky1: #123a63; --sky2: #3f86c2; --sky3: #ffc9a3; --far: #cfe0f0;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #12171c; --card: #1b232b; --ink: #e9edf1; --muted: #9aa6b2; --line: #2e3944;
-      --accent: #e08a5b; --accent-ink: #1a1208; --soft: #262019; --good: #7fc7a3; --warn: #e0b85b;
-      --pine: #0e1f1c;
+      --bg: #0b1522; --card: #132235; --ink: #e8f1f9; --muted: #93a9bd; --line: #24384d;
+      --accent: #ff8a5c; --accent-ink: #1b0d05; --soft: #1a2c42; --good: #7fd1aa; --gold: #f5c453;
+      --sky1: #050b16; --sky2: #12305a; --sky3: #5a4a78; --far: #26405e;
     }
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; background: var(--bg); color: var(--ink);
     font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-  h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 600; line-height: 1.2; margin: 0; }
-  h1 { font-size: 1.7rem; } h2 { font-size: 1.3rem; margin-bottom: 4px; } h3 { font-size: 1.05rem; }
+  h1, h2, h3 { font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif; font-weight: 800; line-height: 1.15; margin: 0; letter-spacing: -.01em; }
+  h1 { font-size: 2rem; } h2 { font-size: 1.3rem; margin-bottom: 4px; } h3 { font-size: 1.05rem; }
   p { margin: 0 0 10px; }
   .muted { color: var(--muted); } .small { font-size: .875rem; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
-  header.top { background: var(--pine); color: #f3efe6; padding: 22px 0 18px; }
-  header.top .sub { color: #c3cfc9; font-size: .9rem; margin-top: 4px; }
-  header.top .row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-  header.top select { background: #ffffff18; color: #fff; border: 1px solid #ffffff40; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+
+  header.top { position: relative; overflow: hidden; color: #fff; padding: 26px 0 96px; cursor: pointer;
+    background: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 58%, var(--sky3) 100%); }
+  header.top .wrap { position: relative; z-index: 3; }
+  header.top h1 { text-shadow: 0 2px 10px #0006; }
+  header.top .sub { color: #e6f1fb; font-size: .92rem; margin-top: 4px; text-shadow: 0 1px 6px #0006; }
+  header.top .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  header.top select { background: #ffffff26; color: #fff; border: 1px solid #ffffff66; backdrop-filter: blur(4px); cursor: pointer; }
   header.top select option { color: #111; }
+  #snow { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+  .peaks { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 110px; z-index: 2; display: block; pointer-events: none; }
+  .peaks .far { fill: var(--far); } .peaks .near { fill: var(--bg); }
+  .skier { position: absolute; left: 0; bottom: 58px; font-size: 32px; z-index: 2; pointer-events: none; }
+  .herohint { position: absolute; right: 14px; bottom: 10px; z-index: 3; background: none; border: 0; color: var(--muted); font: inherit; font-size: .8rem; cursor: pointer; }
+  .fx { position: fixed; pointer-events: none; z-index: 50; font-size: 22px; }
+
   nav.tabs { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
   nav.tabs .wrap { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
   nav.tabs button { flex: 1 0 auto; background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted);
-    font: inherit; font-weight: 600; padding: 12px 10px; cursor: pointer; white-space: nowrap; }
+    font: inherit; font-weight: 700; padding: 12px 10px; cursor: pointer; white-space: nowrap; }
   nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
   main { padding: 18px 0 80px; }
   section.tab { display: none; } section.tab.on { display: block; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 0 0 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 0 0 14px; box-shadow: 0 2px 10px #14304a0d; }
   .banner { background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: .9rem; }
   table { width: 100%; border-collapse: collapse; }
   td, th { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 700; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  tr.day td { font-weight: 700; padding-top: 14px; border-bottom: 0; }
-  tr.sub td { font-weight: 600; } tr.total td { font-weight: 700; font-size: 1.05rem; border-bottom: 0; padding-top: 12px; }
-  .slot { border-top: 1px solid var(--line); padding: 12px 0; } .slot:first-of-type { border-top: 0; }
-  .slot .label { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
-  .slot .last { color: var(--muted); font-size: .9rem; margin: 2px 0 8px; }
-  .pick { background: var(--soft); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
-  .pick .name { font-weight: 700; } .pick .tag { font-size: .72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; }
-  .pick .res { font-size: .875rem; margin-top: 4px; color: var(--good); }
-  label.q { display: block; font-weight: 600; margin: 16px 0 6px; }
-  .hint { font-weight: 400; color: var(--muted); font-size: .875rem; display: block; margin-top: 2px; }
+
+  .switches { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+  .daycard h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .daycard h2 .tot { font-variant-numeric: tabular-nums; color: var(--accent); }
+  .daycard tr.off td { color: var(--muted); text-decoration: line-through; opacity: .6; }
+  .daycard tr:last-child td { border-bottom: 0; }
+  .skitag { font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--sky2); margin-left: 6px; }
+  @media (prefers-color-scheme: dark) { .skitag { color: #8cc4f2; } }
+  .grand { background: linear-gradient(135deg, var(--sky1), var(--sky2)); color: #fff; border: 0; cursor: pointer; }
+  .grand .big { font-size: 2.4rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .grand .muted { color: #d6e6f5; }
+
+  .cmp { display: grid; grid-template-columns: 1fr; gap: 10px; border-top: 1px solid var(--line); padding: 14px 0; }
+  .cmp:first-of-type { border-top: 0; }
+  @media (min-width: 680px) { .cmp { grid-template-columns: 230px 1fr; gap: 18px; } }
+  .cmp .label { grid-column: 1 / -1; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 800; }
+  .colhead { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 6px; }
+  .lastbox { border: 1px dashed var(--line); border-radius: 12px; padding: 10px 12px; height: fit-content; }
+  .lastbox .name { font-weight: 700; } .lastbox .cost { color: var(--accent); font-weight: 700; }
+  .pick { background: var(--soft); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+  .pick:last-child { margin-bottom: 0; }
+  .pick .name { font-weight: 800; } .pick .cost { font-weight: 700; color: var(--accent); margin-left: 6px; white-space: nowrap; }
+  .pick .tag { display: inline-block; font-size: .68rem; font-weight: 800; color: #3b2a00; background: var(--gold); border-radius: 999px; padding: 1px 8px; text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; vertical-align: 2px; }
+  .pick .res { font-size: .875rem; margin-top: 4px; color: var(--good); font-weight: 600; }
+
+  label.q { display: block; font-weight: 700; margin: 16px 0 6px; }
+  .hint { font-weight: 400; color: var(--muted); font-size: .875rem; display: block; margin-top: 2px; position: static; }
   .opts { display: flex; flex-wrap: wrap; gap: 8px; }
-  .opts label { border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; background: var(--card); user-select: none; }
-  .opts input { position: absolute; opacity: 0; pointer-events: none; }
-  .opts label:has(input:checked) { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .opts label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opts label, .switches label { border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; background: var(--card); user-select: none; font-weight: 600; }
+  .opts input, .switches input { position: absolute; opacity: 0; pointer-events: none; }
+  .opts label:has(input:checked), .switches label:has(input:checked) { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .opts label:has(input:focus-visible), .switches label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
   input[type=text], input[type=password], input[type=email], input[type=number], input[type=date], input[type=time], select, textarea {
-    width: 100%; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+    width: 100%; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
   textarea { min-height: 84px; resize: vertical; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .grid2 > div > span, .field > span { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 3px; }
   @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
-  button.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; font: inherit; font-weight: 700; padding: 12px 18px; cursor: pointer; }
-  button.btn.ghost { background: none; color: var(--accent); border: 1px solid var(--accent); }
+  button.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; font: inherit; font-weight: 800; padding: 12px 20px; cursor: pointer; }
+  button.btn:active { transform: scale(.97); }
+  button.btn.ghost { background: none; color: var(--accent); border: 2px solid var(--accent); }
   button.link { background: none; border: 0; color: var(--accent); font: inherit; padding: 0; cursor: pointer; text-decoration: underline; }
   .savebar { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -75,13 +104,14 @@
   .chip.done { background: var(--good); color: var(--card); border-color: var(--good); }
   .tally { margin: 10px 0; } .tally b { display: block; }
   .scroll { overflow-x: auto; }
-  #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--pine); }
-  #gate .box { background: var(--card); border-radius: 14px; padding: 26px; width: 100%; max-width: 360px; }
+  #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    background: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 60%, var(--sky3) 100%); }
+  #gate .box { background: var(--card); border-radius: 18px; padding: 26px; width: 100%; max-width: 360px; box-shadow: 0 10px 40px #0005; }
   #gate .err { color: #c0392b; min-height: 1.4em; font-size: .9rem; margin-top: 8px; }
   .hide { display: none !important; }
   .sugg { border-top: 1px solid var(--line); padding: 10px 0; } .sugg:first-child { border-top: 0; }
   #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
-    padding: 10px 16px; border-radius: 999px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+    padding: 10px 16px; border-radius: 999px; font-weight: 700; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
   #toast.on { opacity: 1; }
 </style>
 </head>
@@ -99,10 +129,18 @@
 </div>
 
 <div id="app" class="hide">
-  <header class="top"><div class="wrap"><div class="row">
-    <div><h1>Aspen 2027</h1><div class="sub">Thu Jan 21 to Sun Jan 24 · Timbers Club, Snowmass · 7 of us</div></div>
-    <div><select id="who" aria-label="Who are you?"></select></div>
-  </div></div></header>
+  <header class="top" id="hero">
+    <canvas id="snow" aria-hidden="true"></canvas>
+    <div class="wrap"><div class="row">
+      <div><h1>Aspen 2027 ⛷️</h1><div class="sub">Thu Jan 21 to Sun Jan 24 · Timbers Club, Snowmass · 7 of us</div></div>
+      <div><select id="who" aria-label="Who are you?"></select></div>
+    </div></div>
+    <svg class="peaks" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true">
+      <polygon class="far" points="0,160 0,92 140,42 260,98 400,22 540,102 660,52 800,108 940,32 1080,92 1200,58 1200,160"/>
+      <polygon class="near" points="0,160 0,122 180,74 330,128 520,64 700,132 860,84 1020,138 1200,98 1200,160"/>
+    </svg>
+    <button class="herohint" type="button">Tap the mountain</button>
+  </header>
   <nav class="tabs"><div class="wrap" role="tablist">
     <button data-tab="budget" aria-selected="true">Budget</button>
     <button data-tab="plan">Plan</button>
@@ -145,74 +183,77 @@ const PEOPLE = ["Chris", "Ali", "Dan", "Paige", "Blake", "Katie", "Andy"];
 /* ======================================================================
    2. TRIP CONTENT: edit freely.
    ====================================================================== */
-// Last year's real spend, average per person (total bill divided by people who shared it).
+// Rough cost per person, rounded from what last year cost. "lift" and "rent" rows only count if switched on.
 const BUDGET = [
   { day: "Thursday", rows: [
-    ["Groceries for the weekend", 24.00],
-    ["Happy hour (Clark's Oyster Bar)", 53.18],
-    ["Dinner (J-Bar)", 111.43] ] },
+    ["Groceries for the weekend", 50], ["Happy hour", 60], ["Dinner", 120] ] },
   { day: "Friday", rows: [
-    ["Après (Little Nell)", 66.53],
-    ["Dinner (Tasters pizza delivery)", 12.64] ] },
+    ["Lift ticket", 280, "lift"], ["Ski or board rental", 65, "rent"],
+    ["Lunch on the mountain", 40], ["Après drinks", 70], ["Casual dinner in", 20] ] },
   { day: "Saturday", rows: [
-    ["Breakfast (Daly Diner)", 21.08],
-    ["Drinks before dinner (Aspen Brewing Co)", 15.09],
-    ["Dinner (Caribou Club)", 223.14] ] },
-  { day: "Sunday", rows: [
-    ["Brunch (White House Tavern)", 39.28] ] },
-  { day: "Whole trip", rows: [
-    ["Tips (housekeeping, concierge, shuttle)", 20.00],
-    ["Ubers", 16.20] ] }
+    ["Breakfast", 25], ["Lift ticket", 310, "lift"], ["Ski or board rental", 65, "rent"],
+    ["Lunch on the mountain", 40], ["Drinks before dinner", 20], ["Splurge dinner", 225], ["Going out", 50] ] },
+  { day: "Sunday", rows: [ ["Brunch", 40] ] },
+  { day: "Whole trip", rows: [ ["Tips for the house staff", 20], ["Ubers and rides", 20] ] }
 ];
-const CLOUD9_LAST_YEAR = 1293.04;   // reservation + day-of spend, split evenly
-const CLOUD9_THIS_YEAR = 985;       // about $685 to book + about $300 there
-const SKI_COSTS = [
-  ["Lift tickets, if you don't have an Ikon Pass", "About $279 Friday and $309 Saturday at full price. Cheaper if bought online ahead."],
-  ["Ski or snowboard rental (delivered to Timbers)", "About $62 a day at last season's Timbers rate. Helmet about $14 a day."]
-];
+const CLOUD9_THIS_YEAR = 1000;      // about $685 to book + about $300 there
 
-// Where we went last year and what's recommended this year.
+// Last year vs this year's options. cost is per person.
 const PLAN = [
   { day: "Thursday, Jan 21", slots: [
-    { label: "Happy hour", last: "Clark's Oyster Bar ($53 each)", picks: [
-      { name: "Clark's Oyster Bar", tag: "Pick", desc: "Same as last year because it was great. Packed oyster bar with a 3 to 5 PM happy hour: $10 martinis, $12 burgers and discounted oysters.",
-        res: "Reservations open Dec 22 (30 days out). Booking a table for 7 around 4:30." } ] },
-    { label: "Dinner", last: "J-Bar ($111 each)", picks: [
-      { name: "Stay at Clark's", desc: "Keep the table and roll happy hour into dinner. Linguine with clams, cioppino, lobster rolls.", res: "Same reservation as happy hour." },
-      { name: "Las Montañas", desc: "Lively upstairs Mexican spot with mountain views. Sizzling fajitas, lobster quesadillas and margaritas. About $75 to $110 each.",
-        res: "Books on OpenTable. Open through Dec 31 right now, so Jan 21 should open in December." } ] }
+    { label: "Happy hour", last: { name: "Clark's Oyster Bar", cost: "$53", note: "Half-price martinis and oysters. It was great." }, picks: [
+      { name: "Clark's Oyster Bar", tag: "Pick", cost: "about $55", desc: "Running it back. Packed, buzzy oyster bar with a 3 to 5 PM happy hour: $10 top-shelf martinis, $12 burgers, discounted oysters and $5 oyster shooters.",
+        res: "Reservations open Dec 22 (30 days out). Booking a table for 7 around 4:30 so we have seats." } ] },
+    { label: "Dinner", last: { name: "J-Bar at Hotel Jerome", cost: "$111", note: "Walk-in only. Burgers and a classic Aspen bar." }, picks: [
+      { name: "Stay at Clark's", cost: "about $90 to $130", desc: "Keep the table and roll happy hour into dinner. Linguine with clams, cioppino, lobster rolls and a raw bar.", res: "Same reservation as happy hour." },
+      { name: "Las Montañas", tag: "Pick", cost: "about $75 to $110", desc: "Lively upstairs Mexican spot with mountain views and a bar. Tabletop sizzling fajitas, lobster and lamb barbacoa quesadillas, house-made tortillas and margaritas. Rated 4.8 on OpenTable and good for groups.",
+        res: "Books on OpenTable for up to 20. Open through Dec 31 right now, so Jan 21 should open in early December." },
+      { name: "Campo de Fiori", cost: "about $100 to $130", desc: "Backup. Loud, social Italian trattoria with pastas at $31 to $34. Open until 10:30.", res: "Books on OpenTable for up to 20." },
+      { name: "Brunelleschi's", cost: "about $50 to $85", desc: "Backup and the cheapest option. Pizza and pasta with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." } ] }
   ] },
   { day: "Friday, Jan 22", slots: [
-    { label: "Lunch", last: "Cloud Nine ($1,293 each, split evenly)", picks: [
-      { name: "Cloud Nine", tag: "Vote", desc: "The champagne-spraying lunch party at Aspen Highlands, 1:45 PM seating. About $1,000 each this year. Vote in My answers.",
-        res: "Books on Tock. Not open yet; Cloud Nine opens for the season Dec 12." },
-      { name: "Ski Snowmass, lunch on the mountain", desc: "The easy option if we skip Cloud Nine. Ullrhof, the mid-mountain restaurant, reopens this season after a full rebuild.", res: "No reservation needed." } ] },
-    { label: "Après", last: "The Little Nell ($67 each)", picks: [
-      { name: "Venga Venga", tag: "Pick", desc: "Slope-side patio at the bottom of Fanny Hill in Snowmass with an outdoor bar and fire pits. We can ski right to it, and it's close to Timbers.",
-        res: "Walk up. Calling ahead to hold space for 7." } ] },
-    { label: "Dinner", last: "Tasters pizza delivery ($13 each)", picks: [
-      { name: "Tasters and game night", tag: "Pick", desc: "Pizza delivered to Timbers, games and the hot tub.", res: "No reservation needed." } ] }
+    { label: "Lunch", last: { name: "Cloud Nine", cost: "$1,293", note: "Split evenly: $4,113 to reserve plus $2,352 on the day for five of us." }, picks: [
+      { name: "Cloud Nine again", tag: "Vote", cost: "about $1,000", desc: "The champagne-spraying lunch party at Aspen Highlands, 1:45 PM seating. About $685 each to book plus about $300 there. 21 and over with ID. Vote in My answers.",
+        res: "Books on Tock. Not open yet; Cloud Nine opens for the season Dec 12. We need to decide soon." },
+      { name: "Ski Snowmass, lunch on the mountain", cost: "about $40", desc: "The easy option if we skip Cloud Nine. Ullrhof, the mid-mountain restaurant, reopens this season after a full rebuild.", res: "No reservation needed." } ] },
+    { label: "Après", last: { name: "The Little Nell", cost: "$67", note: "Fancy après at the base of Aspen Mountain." }, picks: [
+      { name: "Venga Venga", tag: "Pick", cost: "about $50 to $80", desc: "Slope-side Mexican patio at the bottom of Fanny Hill in Snowmass with an outdoor bar, fire pits and margaritas. We ski right to it and it's a short trip back to Timbers.",
+        res: "Walk up. Calling ahead to hold space for 7." },
+      { name: "Ajax Tavern, then the WET Deck", cost: "about $75 to $150", desc: "Only if we ski Aspen Mountain that day. Truffle fries on the Ajax patio, then the W's rooftop with a DJ, fire pits and a hot tub.", res: "The WET Deck books on OpenTable for up to 20." } ] },
+    { label: "Dinner", last: { name: "Tasters pizza delivery", cost: "$13", note: "Pizza, games and the hot tub at the house." }, picks: [
+      { name: "Tasters and game night", tag: "Pick", cost: "about $15 to $20", desc: "Same again: New York-style pizza delivered to Timbers, games and the hot tub.", res: "No reservation needed." },
+      { name: "Il Poggio or Kenichi Snowmass", cost: "about $80 to $150", desc: "If we'd rather go out without leaving Snowmass. Il Poggio is lively Italian with hearth-baked pizza; Kenichi has a sushi spot up here too.", res: "To be confirmed if we want it." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
-    { label: "Après", last: "Free après at Timbers", picks: [
-      { name: "Free après at Timbers", tag: "Pick", desc: "3:30 to 4:30 PM at the club, then get ready to go out.", res: "No reservation needed." } ] },
-    { label: "Drinks before dinner", last: "Aspen Brewing Co ($15 each)", picks: [
-      { name: "Aspen Public House", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
-      { name: "Aspen Brewing Co", desc: "Last year's spot. Very chill: craft beer, pizza, darts and pool.", res: "Walk in." } ] },
-    { label: "Dinner (the splurge)", last: "Caribou Club ($223 each)", picks: [
-      { name: "Kenichi", tag: "First choice", desc: "Sushi and Japanese with a buzzy bar scene and big tables built for groups. Miso black cod, rolls, wagyu on a hot rock. About $130 to $175 each.",
-        res: "Books on OpenTable. Open through Dec 23 right now, so Jan 23 should open in mid-December. $30 each deposit that goes toward the bill." },
-      { name: "Jing", desc: "Louder Chinese and sushi spot with good music, open until 10. Similar price to Kenichi.", res: "Booking window to be confirmed." },
-      { name: "Matsuhisa", desc: "Nobu Matsuhisa's Aspen restaurant. The big-name option and the priciest, about $175 to $250 each.", res: "Reservations open Dec 24 (30 days out), by phone for 7." },
-      { name: "Caribou Club", desc: "Last year's dinner. Members club with a DJ from 10 PM, so dinner turns into the night out.", res: "By arrangement, same as last year." } ] },
-    { label: "Night out", last: "Stayed at Caribou Club", picks: [
-      { name: "Escobar, Sterling or Silver City", desc: "Escobar and Sterling are the DJ clubs. Silver City is a western saloon with live bands.", res: "Walk in." } ] }
+    { label: "Breakfast", last: { name: "Daly Diner", cost: "$21", note: "Diner breakfast in Snowmass before skiing." }, picks: [
+      { name: "Breakfast at Timbers or Daly Diner", cost: "about $0 to $25", desc: "Breakfast at the club, or the diner again.", res: "No reservation needed." } ] },
+    { label: "Lunch and après", last: { name: "Up 4 Pizza, then free après at Timbers", cost: "about $40", note: "Skied Snowmass all day." }, picks: [
+      { name: "Same again", tag: "Pick", cost: "about $40", desc: "Ski Snowmass, lunch on the mountain, then the free après at Timbers from 3:30 to 4:30 before getting ready to go out.", res: "No reservation needed." } ] },
+    { label: "Drinks before dinner", last: { name: "Aspen Brewing Co", cost: "$15", note: "Very chill, which was great." }, picks: [
+      { name: "Aspen Public House", tag: "Pick", cost: "about $20", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
+      { name: "Aspen Brewing Co", cost: "about $15", desc: "Last year's spot: craft beer, pizza, darts and pool.", res: "Walk in." },
+      { name: "J-Bar, BUCK or Stranahan's", cost: "about $20", desc: "J-Bar for one round at the Hotel Jerome (expect to stand). BUCK is an old-school, high-energy ski bar. Stranahan's is a western whiskey lodge on the mall.", res: "All walk in." } ] },
+    { label: "Dinner (the splurge)", last: { name: "Caribou Club", cost: "$223", note: "Members club. Dinner, then the DJ started at 10." }, picks: [
+      { name: "Kenichi", tag: "First choice", cost: "about $130 to $175", desc: "Sushi and Japanese with a buzzy bar scene and big tables built for 7 to 12. Miso black cod, yellowtail serrano, rolls and wagyu on a hot rock. Rated 4.8 on OpenTable and 4.4 on Google.",
+        res: "Books on OpenTable. Open through Dec 23 right now, so Jan 23 should open around Dec 13. $30 each deposit that goes toward the bill. It's closed for the off-season, so confirming it reopens." },
+      { name: "Jing", cost: "about $130 to $200", desc: "Backup with a louder room. Chinese plus sushi, good music, open until 10. Reviewers call it the place everyone ends up.", res: "Booking window to be confirmed." },
+      { name: "Matsuhisa", cost: "about $175 to $250", desc: "Nobu Matsuhisa's Aspen restaurant and the big-name option. Shared plates at $26 to $39 each. Closes at 9.", res: "Downstairs room opens Dec 24 (30 days out), by phone for 7." },
+      { name: "Betula", cost: "about $150 to $200", desc: "French and South American menu with a sunset view and a DJ that runs until midnight.", res: "By email. Reopens for winter Nov 26." },
+      { name: "Caribou Club again", cost: "about $225", desc: "Seafood towers, caviar and club plates, and the DJ starts at 10 so we wouldn't need to go anywhere after.", res: "By arrangement, same as last year." } ] },
+    { label: "Night out", last: { name: "Stayed at Caribou Club", cost: "", note: "Dance floor picked up around 11." }, picks: [
+      { name: "Escobar, Sterling or Silver City", cost: "about $50", desc: "Escobar and Sterling are the DJ clubs. Silver City is a western saloon with live bands. Bad Harriet is the speakeasy under the Hotel Jerome with a DJ from 10, but it takes a $50 each deposit.", res: "Walk in, except Bad Harriet (Resy)." } ] }
   ] },
   { day: "Sunday, Jan 24", slots: [
-    { label: "Brunch", last: "White House Tavern ($39 each)", picks: [
-      { name: "Bear Den", desc: "Cozy all-day spot in a historic house. Brunch runs 9 AM to 3 PM and they take reservations, which helps with 7.", res: "Booking once winter hours are confirmed." },
-      { name: "White House Tavern", desc: "Last year's brunch. Great sandwiches, but walk-in only, so there may be a wait for 7.", res: "Walk in only." } ] }
+    { label: "Brunch", last: { name: "White House Tavern", cost: "$39", note: "Great sandwiches. Walk-in only." }, picks: [
+      { name: "Bear Den", tag: "Pick", cost: "about $40", desc: "Cozy all-day spot in a historic house. Brunch runs 9 AM to 3 PM and they take reservations, which helps with 7.", res: "Booking once winter hours are confirmed." },
+      { name: "White House Tavern", cost: "about $40", desc: "Last year's brunch. Still great, but walk-in only, so there may be a wait for 7.", res: "Walk in only." },
+      { name: "Mawa's Kitchen", cost: "about $45", desc: "Michelin-recommended and right by the airport, so it works on the way out.", res: "Brunch hours to be confirmed." } ] }
   ] }
+];
+const RULED_OUT = [
+  ["French Alpine Bistro and Angelo's", "Too expensive, about $175 to $250 each."],
+  ["Yuki and Hooch", "Too quiet for this group."],
+  ["Mezzaluna, ZigZag, Madame Ushi and Mi Chola", "Permanently closed."]
 ];
 
 /* ======================================================================
@@ -282,45 +323,86 @@ function makeLocalStore() {
 let user = null, me = ls.get("aspen_me", ""), responses = [], suggestions = [], started = false;
 
 /* ---------- budget tab ---------- */
+let ski = ls.get("aspen_ski", { lift: true, rent: true });
 function renderBudget() {
-  const base = BUDGET.reduce((s, d) => s + d.rows.reduce((a, r) => a + r[1], 0), 0);
-  const body = h("tbody");
-  for (const d of BUDGET) {
-    body.append(h("tr", { class: "day" }, h("td", { colspan: 2 }, d.day)));
-    for (const [item, amt] of d.rows) body.append(h("tr", {}, h("td", {}, item), h("td", { class: "num" }, money(amt))));
-  }
-  body.append(h("tr", { class: "total" }, h("td", {}, "Budget per person"), h("td", { class: "num" }, money0(base))));
+  const counts = (r) => !r[2] || ski[r[2]];
+  const dayTotal = (d) => d.rows.filter(counts).reduce((a, r) => a + r[1], 0);
+  const total = BUDGET.reduce((s, d) => s + dayTotal(d), 0);
+  const sw = (k, label) => h("label", {}, h("input", { type: "checkbox", checked: ski[k], onchange: (e) => { ski[k] = e.target.checked; ls.set("aspen_ski", ski); renderBudget(); } }), label);
+  const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
+    h("div", { class: "muted small" }, "Your rough total for the trip"),
+    h("div", { class: "big" }, money0(total)),
+    h("div", { class: "muted small" }, "Flights not included. Cloud Nine not included."));
   $("#tab-budget").replaceChildren(
     h("div", { class: "card" },
-      h("h2", {}, "The budget"),
-      h("p", { class: "muted" }, "This is what last year actually cost each person on average. Plan on about the same this year. Flights aren't included."),
-      h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Last year"), h("th", { class: "num" }, "Avg per person"))), body)),
+      h("h2", {}, "What the trip costs, roughly"),
+      h("p", { class: "muted" }, "Rounded from what last year cost each of us. Treat it as this year's budget. Flights aren't included."),
+      h("div", { class: "small", style: "font-weight:700;margin-top:8px" }, "Make it yours:"),
+      h("div", { class: "switches" }, sw("lift", "I'm buying lift tickets"), sw("rent", "I'm renting gear")),
+      h("p", { class: "small muted", style: "margin:6px 0 0" }, "Switch off lift tickets if you have an Ikon Pass.")),
+    ...BUDGET.map((d) => h("div", { class: "card daycard" },
+      h("h2", {}, h("span", {}, d.day), h("span", { class: "tot" }, money0(dayTotal(d)))),
+      h("table", {}, h("tbody", {}, d.rows.map((r) => h("tr", { class: counts(r) ? "" : "off" },
+        h("td", {}, r[0], r[2] && h("span", { class: "skitag" }, "ski")), h("td", { class: "num" }, money0(r[1])))))))),
+    grand,
     h("div", { class: "card" },
-      h("h2", {}, "Cloud Nine is extra"),
-      h("p", {}, "Last year Cloud Nine came to ", h("b", {}, money0(CLOUD9_LAST_YEAR)), " a person when split evenly. This year it would be about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " each (about $685 to book plus about $300 there)."),
-      h("table", {}, h("tbody", {},
-        h("tr", {}, h("td", {}, "Trip without Cloud Nine"), h("td", { class: "num" }, money0(base))),
-        h("tr", { class: "sub" }, h("td", {}, "Trip with Cloud Nine"), h("td", { class: "num" }, money0(base + CLOUD9_THIS_YEAR))))),
-      h("p", { class: "small muted", style: "margin-top:10px" }, "Vote on it in My answers. We need to decide soon.")),
-    h("div", { class: "card" },
-      h("h2", {}, "Skiing costs, if they apply to you"),
-      h("table", {}, h("tbody", {}, SKI_COSTS.map(([a, b]) => h("tr", {}, h("td", {}, h("b", {}, a), h("div", { class: "small muted" }, b)))))))
+      h("h2", {}, "Cloud Nine would be extra 🍾"),
+      h("p", {}, "The champagne lunch on Friday would add about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person, which would make your total about ", h("b", {}, money0(total + CLOUD9_THIS_YEAR)), "."),
+      h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
+      h("button", { class: "btn ghost", type: "button", onclick: (e) => spray(e.currentTarget) }, "Pop the champagne"))
   );
 }
 
 /* ---------- plan tab ---------- */
 function renderPlan() {
   $("#tab-plan").replaceChildren(
-    h("p", { class: "muted" }, "Where we went last year, and what's recommended this year. Nothing is booked yet."),
-    PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
-      d.slots.map((s) => h("div", { class: "slot" },
+    h("p", { class: "muted" }, "Where we went last year next to this year's options. Costs are per person. Nothing is booked yet."),
+    ...PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
+      d.slots.map((s) => h("div", { class: "cmp" },
         h("div", { class: "label" }, s.label),
-        h("div", { class: "last" }, "Last year: " + s.last),
-        s.picks.map((p) => h("div", { class: "pick" },
-          h("div", {}, h("span", { class: "name" }, p.name), p.tag && h("span", { class: "tag" }, p.tag)),
-          h("div", { class: "small" }, p.desc),
-          h("div", { class: "res" }, p.res)))))))
+        h("div", {}, h("div", { class: "colhead" }, "Last year"),
+          h("div", { class: "lastbox" }, h("div", {}, h("span", { class: "name" }, s.last.name), s.last.cost && h("span", { class: "cost" }, " " + s.last.cost)), h("div", { class: "small muted" }, s.last.note))),
+        h("div", {}, h("div", { class: "colhead" }, "This year's options"),
+          s.picks.map((p) => h("div", { class: "pick" },
+            h("div", {}, h("span", { class: "name" }, p.name), p.tag && h("span", { class: "tag" }, p.tag), p.cost && h("span", { class: "cost" }, p.cost)),
+            h("div", { class: "small" }, p.desc),
+            h("div", { class: "res" }, p.res)))))))),
+    h("div", { class: "card" }, h("h2", {}, "Looked at and ruled out"),
+      h("table", {}, h("tbody", {}, RULED_OUT.map(([a, b]) => h("tr", {}, h("td", {}, h("b", {}, a)), h("td", { class: "small" }, b))))))
   );
+}
+
+/* ---------- fun stuff ---------- */
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function burst(x, y, emojis, n = 18, up = false) {
+  if (calm) return;
+  for (let i = 0; i < n; i++) {
+    const s = h("span", { class: "fx" }, emojis[i % emojis.length]); document.body.append(s);
+    const ang = Math.random() * Math.PI * 2, dist = 60 + Math.random() * 150;
+    const dx = Math.cos(ang) * dist, dy = up ? -Math.abs(Math.sin(ang)) * dist * 1.6 - 30 : Math.sin(ang) * dist + 70;
+    s.style.left = x + "px"; s.style.top = y + "px";
+    s.animate([{ transform: "translate(-50%,-50%) scale(.4)", opacity: 1 }, { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.25) rotate(${Math.random() * 360}deg)`, opacity: 0 }],
+      { duration: 900 + Math.random() * 800, easing: "cubic-bezier(.2,.7,.3,1)" }).onfinish = () => s.remove();
+  }
+}
+function spray(el) { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "✨"], 26, true); toast("Pop!"); }
+function skiRun() {
+  if (calm) return;
+  const hero = $("#hero"), who = ["⛷️", "🏂", "⛷️", "🏂", "🛷"][Math.floor(Math.random() * 5)], w = hero.clientWidth;
+  const s = h("span", { class: "skier" }, who); hero.append(s);
+  s.animate([{ transform: "translate(-50px,-30px) scaleX(-1) rotate(-10deg)" }, { transform: `translate(${w * 0.5}px,0px) scaleX(-1) rotate(-16deg)` }, { transform: `translate(${w + 50}px,30px) scaleX(-1) rotate(-8deg)` }],
+    { duration: 2200, easing: "ease-in" }).onfinish = () => s.remove();
+}
+function startSnow() {
+  if (calm) return;
+  const c = $("#snow"), hero = $("#hero"), ctx = c.getContext("2d"); let flakes = [], W = 0, H = 0;
+  const size = () => { W = c.width = hero.clientWidth; H = c.height = hero.clientHeight; flakes = Array.from({ length: Math.round(W / 14) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: 1 + Math.random() * 2.2, v: .3 + Math.random() * .9, d: Math.random() * 6.28 })); };
+  size(); addEventListener("resize", size);
+  (function tick() {
+    if (!document.hidden) { ctx.clearRect(0, 0, W, H); ctx.fillStyle = "rgba(255,255,255,.85)";
+      for (const f of flakes) { f.y += f.v; f.d += .01; f.x += Math.sin(f.d) * .4; if (f.y > H) { f.y = -4; f.x = Math.random() * W; } ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.28); ctx.fill(); } }
+    requestAnimationFrame(tick);
+  })();
 }
 
 /* ---------- my answers tab ---------- */
@@ -411,7 +493,7 @@ function renderMe() {
         ls.set("aspen_rental_" + key(me), rental);
         await store.saveRental(me, rental);
       } else if (r.renting === "Yes") { await store.deleteRental(me); }
-      toast("Saved. Thank you, " + me + "!");
+      toast("Saved. Thank you, " + me + "!"); burst(innerWidth / 2, innerHeight - 90, ["❄️", "⛷️", "❄️", "🏔️"], 22, true);
     } catch (err) { console.error(err); toast("Couldn't save. Check your connection and try again."); }
     btn.disabled = false;
   });
@@ -495,6 +577,8 @@ function startApp() {
   who.addEventListener("change", () => { me = who.value; ls.set("aspen_me", me); renderMe(); });
   document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
   renderBudget(); renderPlan(); renderMe(); renderGroup(); renderIdeas();
+  $("#hero").addEventListener("click", (e) => { if (!e.target.closest("select")) skiRun(); });
+  startSnow();
   store.watchResponses((list) => { responses = list; renderGroup(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
   store.watchSuggestions((list) => { suggestions = list; renderIdeas(); });
   showTab(ls.get("aspen_tab", "budget"));
