@@ -171,7 +171,7 @@
   .pick .head::before { content: ""; flex: none; width: 18px; height: 18px; margin-top: 2px; border: 2px solid var(--accent); border-radius: 50%; display: grid; place-items: center; font-size: 12px; line-height: 1; font-weight: 900; color: var(--accent-ink); }
   .pick.mine .head::before { content: "✓"; background: var(--accent); }
   .pickchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .pickchip { background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 2px 10px; font-size: .78rem; font-weight: 800; }
+  .pickchip { background: var(--accent); color: #fff; border-radius: 999px; padding: 2px 10px; font-size: .78rem; font-weight: 800; }
   .ideabox { margin-top: 10px; }
   .idea { font-size: .9rem; padding: 6px 0; border-top: 1px dashed var(--line); }
   .ideaform { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; } .ideaform input { flex: 1 1 220px; }
@@ -240,6 +240,8 @@ const CONFIG = {
 };
 
 const PEOPLE = ["Chris", "Ali", "Dan", "Paige", "Blake", "Katie", "Andy"];
+// Each person's "Pick" tag color on the Plan page, in the same order as PEOPLE.
+const PICK_COLORS = ["#2476bd", "#7b4bc4", "#2b8a5a", "#c2337a", "#0b7a86", "#c93c3c", "#946a00"];
 
 /* ======================================================================
    2. TRIP CONTENT: edit freely.
@@ -497,7 +499,7 @@ function renderPlan(force) {
             return h("button", { type: "button", class: "pick" + (mine ? " mine" : ""), "aria-pressed": mine ? "true" : "false", onclick: () => togglePick(s.id, p.name) },
               h("span", { class: "head" }, h("span", {}, h("span", { class: "name" }, p.name), p.cost && h("span", { class: "cost" }, p.cost))),
               h("span", { class: "blk small" }, p.desc),
-              who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip" }, n + "'s Pick")))); }),
+              who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + "'s Pick")))); }),
           ideaBox(s)))))),
     ...(other.length > 0 ? [h("div", { class: "card" }, h("h2", {}, "Other ideas"), other.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text)))] : [])
   );
