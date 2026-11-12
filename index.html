@@ -376,6 +376,7 @@ async function makeFirebaseStore() {
     watchResponses: (cb) => F.onSnapshot(F.collection(db, C("responses")), (s) => cb(s.docs.map((d) => d.data())), () => cb([])),
     watchSuggestions: (cb) => F.onSnapshot(F.query(F.collection(db, C("suggestions")), F.orderBy("createdAt", "desc")), (s) => cb(s.docs.map((d) => ({ ...d.data(), at: d.data().createdAt?.toDate?.() }))), () => cb([])),
     addSuggestion: (name, text, slot = "") => F.addDoc(F.collection(db, C("suggestions")), { name, text, slot, createdAt: F.serverTimestamp() }),
+    saveSki: (name, s) => F.setDoc(F.doc(db, C("responses"), "ski_" + key(name)), { type: "ski", name, ...s, updatedAt: F.serverTimestamp() }),
     savePicks: (name, picks) => F.setDoc(F.doc(db, C("responses"), "picks_" + key(name)), { type: "picks", name, picks, updatedAt: F.serverTimestamp() }),
     listRentals: async () => (await F.getDocs(F.collection(db, C("rentals")))).docs.map((d) => d.data())
   };
@@ -394,6 +395,7 @@ function makeLocalStore() {
     deleteRental: async (name) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { name, cancelled: true }; ls.set("demo_rentals", all); },
     watchResponses: (cb) => { subs.responses.push(cb); emit("responses"); },
     watchSuggestions: (cb) => { subs.suggestions.push(cb); emit("suggestions"); },
+    saveSki: async (name, s) => { const all = ls.get("demo_responses", {}); all["ski_" + key(name)] = { type: "ski", name, ...s }; ls.set("demo_responses", all); emit("responses"); },
     savePicks: async (name, picks) => { const all = ls.get("demo_responses", {}); all["picks_" + key(name)] = { type: "picks", name, picks }; ls.set("demo_responses", all); emit("responses"); },
     addSuggestion: async (name, text, slot = "") => { const all = ls.get("demo_suggestions", []); all.unshift({ name, text, slot, at: new Date().toISOString() }); ls.set("demo_suggestions", all); emit("suggestions"); },
     listRentals: async () => Object.values(ls.get("demo_rentals", {}))
@@ -406,9 +408,11 @@ let user = null, me = ls.get("aspen_me", ""), responses = [], suggestions = [], 
 /* ---------- budget tab ---------- */
 let shut = ls.get("aspen_shut", {});
 let c9 = ls.get("aspen_c9", false);
-let ski = ls.get("aspen_ski2", { on: false, fri: "", sat: "", lift: false, rent: false });
+const SKI_NONE = { on: false, fri: "", sat: "", lift: false, rent: false };
+const skiFrom = (d) => ({ on: !!d.on, fri: d.fri || "", sat: d.sat || "", lift: !!d.lift, rent: !!d.rent });
+let ski = ls.get("aspen_ski2", { ...SKI_NONE }), skiDocs = {}, skiSynced = false;
 function renderBudget() {
-  const save = () => { ls.set("aspen_ski2", ski); renderBudget(); };
+  const save = () => { ls.set("aspen_ski2", ski); if (me) store.saveSki(me, ski).catch(() => toast("Couldn't save your skiing choices. Try again.")); renderBudget(); renderMe(); };
   const anyDay = ski.on && (ski.fri || ski.sat);
   const extra = (dayName) => {
     const k = Object.keys(SKI.days).find((x) => SKI.days[x].day === dayName), kind = k && ski.on && ski[k];
@@ -439,6 +443,7 @@ function renderBudget() {
     h("div", { class: "card" },
       h("h2", {}, "What the trip costs, roughly"),
       h("p", { class: "muted" }, "Rounded from what last year cost each of us. Treat it as this year's budget. Flights aren't included."),
+      !me && h("p", { class: "small", style: "font-weight:700" }, "Pick your name at the top first so your skiing choices are saved."),
       h("div", { class: "switches" }, pill(ski.on, "I plan on skiing", (e) => { ski.on = e.target.checked; save(); })),
       ski.on && h("div", { class: "choices" }, choice("fri", "full"), choice("fri", "half"), choice("sat", "full"), choice("sat", "half")),
       anyDay && h("div", { class: "switches" },
@@ -542,15 +547,10 @@ function startSnow() {
 
 /* ---------- my answers tab ---------- */
 const Q = {
-  splurge: { q: "Are you good with one splurge-ish dinner?", hint: "Saturday night, about $130 to $250 a person depending on where we go.", opts: ["Yes", "No", "Depends on the price"] },
+  splurge: { q: "Are you good with one splurge dinner?", hint: "Saturday night, about $200 a person. Last year was about $225 a person.", opts: ["Yes", "No"] },
   cloud9: { q: "Do you want to do Cloud Nine on Friday?", hint: "About $1,000 a person. Friday is the only day that works and we have to decide soon.", opts: ["Yes", "No", "Only if everyone's in"] },
-  sushi: { q: "Are you good with sushi for the Saturday dinner?", opts: ["Yes", "No", "Fine, I'll order cooked dishes"] },
-  budgetOk: { q: "Does the budget on the Budget tab work for you?", opts: ["Yes", "I'd like to spend less", "Happy to spend more"] },
-  pass: { q: "Do you have an Ikon Pass, or will you need lift tickets?", hint: "The Ikon Base Pass only covers Snowmass, not Aspen Mountain or Highlands.", opts: ["Ikon Pass", "Ikon Base Pass", "Need lift tickets", "Not skiing"] },
-  renting: { q: "Will you be renting skis or a snowboard?", opts: ["Yes", "No"] },
-  pickup: { q: "Do you need a ride from the airport?", opts: ["Yes", "No, I'm sorted", "I can share a ride"] }
+  sushi: { q: "Would you be ok with sushi being one of our dinners?", opts: ["Yes", "No", "Fine, I'll order cooked dishes"] }
 };
-const SKI_DAYS = ["Thu Jan 21 (afternoon)", "Fri Jan 22", "Sat Jan 23", "Sun Jan 24 (morning)"];
 const AIRPORTS = ["Aspen (ASE)", "Eagle/Vail (EGE)", "Denver (DEN)", "Driving", "Other"];
 const RENTAL_FIELDS = { packages: ["Performance skis", "Demo skis", "Snowboard", "Demo snowboard"], ability: ["First time ever", "I (beginner)", "II (intermediate)", "III (advanced)"] };
 
@@ -565,6 +565,8 @@ function renderMe() {
   const r = responses.find((x) => key(x.name || "") === key(me)) || {};
   const rent = ls.get("aspen_rental_" + key(me), {});
   const a = r.arrive || {}, d = r.depart || {};
+  const skiing = ski.on && !!(ski.fri || ski.sat), renting = skiing && ski.rent;
+  const skiLine = (k) => ski.on && ski[k] ? (ski[k] === "full" ? "Full day" : "Half day") : "Not skiing";
   const inp = (name, type, val, extra = {}) => h("input", { type, name, value: val ?? "", ...extra });
   const sel = (name, opts, val) => h("select", { name }, h("option", { value: "" }, "Choose"), opts.map((o) => h("option", { value: o, selected: val === o }, o)));
 
@@ -587,47 +589,44 @@ function renderMe() {
     h("div", { class: "card" },
       h("h2", {}, me + "'s answers"),
       h("p", { class: "muted small" }, "You can come back and change these any time."),
-      ["splurge", "cloud9", "sushi", "budgetOk"].map((k) => [h("label", { class: "q" }, Q[k].q, Q[k].hint && h("span", { class: "hint" }, Q[k].hint)), radio(k, Q[k].opts, r[k])])),
+      ["splurge", "cloud9", "sushi"].map((k) => [h("label", { class: "q" }, Q[k].q, Q[k].hint && h("span", { class: "hint" }, Q[k].hint)), radio(k, Q[k].opts, r[k])])),
     h("div", { class: "card" },
       h("h2", {}, "Skiing"),
-      h("label", { class: "q" }, Q.pass.q, h("span", { class: "hint" }, Q.pass.hint)), radio("pass", Q.pass.opts, r.pass),
-      h("label", { class: "q" }, "Which days are you planning to ski?", h("span", { class: "hint" }, "Pick all that apply, or none if you're not skiing.")),
-      h("div", { class: "opts" }, SKI_DAYS.map((o) => h("label", {}, h("input", { type: "checkbox", name: "skiDays", value: o, checked: (r.skiDays || []).includes(o) }), o))),
-      h("label", { class: "q" }, Q.renting.q), radio("renting", Q.renting.opts, r.renting)),
+      h("p", { class: "small muted" }, "Filled in from your choices on the Budget tab."),
+      h("table", {}, h("tbody", {},
+        h("tr", {}, h("td", {}, "Friday"), h("td", { class: "num" }, skiLine("fri"))),
+        h("tr", {}, h("td", {}, "Saturday"), h("td", { class: "num" }, skiLine("sat"))),
+        h("tr", {}, h("td", {}, "Lift tickets"), h("td", { class: "num" }, skiing ? (ski.lift ? "Buying lift tickets" : "Not buying lift tickets") : "Not skiing")),
+        h("tr", {}, h("td", {}, "Ski or board rental"), h("td", { class: "num" }, renting ? "Renting gear" : "Not renting")))),
+      h("p", { style: "margin:12px 0 0" }, h("button", { type: "button", class: "btn ghost sm", onclick: () => showTab("budget") }, "Change these on the Budget tab"))),
     rentalBox,
     h("div", { class: "card" },
-      h("h2", {}, "Flights and airport pickup"),
-      h("p", { class: "small muted" }, "Add what you know now and update it once you book."),
+      h("h2", {}, "Flights"),
+      h("p", { class: "small muted" }, "Add what you know now and update it once you book. Timbers will handle airport pickups."),
       h("h3", { style: "margin-top:8px" }, "Arriving"),
       h("div", { class: "grid2" },
         field("Airport", sel("a_airport", AIRPORTS, a.airport)), field("Airline and flight number", inp("a_flight", "text", a.flight)),
-        field("Date", inp("a_date", "date", a.date || "2027-01-21")), field("Landing time (Mountain)", inp("a_time", "time", a.time))),
+        field("Date", inp("a_date", "date", a.date || "2027-01-21"))),
       h("h3", { style: "margin-top:16px" }, "Leaving"),
       h("div", { class: "grid2" },
         field("Airport", sel("d_airport", AIRPORTS, d.airport)), field("Airline and flight number", inp("d_flight", "text", d.flight)),
-        field("Date", inp("d_date", "date", d.date || "2027-01-24")), field("Takeoff time (Mountain)", inp("d_time", "time", d.time))),
-      h("label", { class: "q" }, Q.pickup.q), radio("pickup", Q.pickup.opts, r.pickup)),
-    h("div", { class: "card" },
-      h("h2", {}, "Anything else"),
-      h("label", { class: "q" }, "Food allergies or things you don't eat?"), h("input", { type: "text", name: "diet", value: r.diet ?? "", placeholder: "None" }),
-      h("label", { class: "q" }, "Anything else Chris should know?"), h("textarea", { name: "notes" }, r.notes ?? "")),
+        field("Date", inp("d_date", "date", d.date || "2027-01-24")))),
     h("div", { class: "savebar" }, h("button", { class: "btn" }, "Save my answers"), h("span", { class: "small muted", id: "saveNote" }, r.name ? "Saved before. Saving again updates it." : "")));
 
-  const syncRental = () => rentalBox.classList.toggle("hide", new FormData(form).get("renting") !== "Yes");
-  form.addEventListener("change", syncRental); syncRental();
+  rentalBox.classList.toggle("hide", !renting);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = new FormData(form), g = (k) => (f.get(k) || "").toString().trim();
-    const data = { splurge: g("splurge"), cloud9: g("cloud9"), sushi: g("sushi"), budgetOk: g("budgetOk"), pass: g("pass"), skiDays: f.getAll("skiDays"), renting: g("renting"), pickup: g("pickup"),
-      arrive: { airport: g("a_airport"), flight: g("a_flight"), date: g("a_date"), time: g("a_time") }, depart: { airport: g("d_airport"), flight: g("d_flight"), date: g("d_date"), time: g("d_time") }, diet: g("diet"), notes: g("notes") };
+    const data = { splurge: g("splurge"), cloud9: g("cloud9"), sushi: g("sushi"),
+      arrive: { airport: g("a_airport"), flight: g("a_flight"), date: g("a_date") }, depart: { airport: g("d_airport"), flight: g("d_flight"), date: g("d_date") }, diet: r.diet || "", notes: r.notes || "" };
     const btn = form.querySelector("button.btn"); btn.disabled = true;
     try {
       await store.saveResponse(me, data);
-      if (data.renting === "Yes") {
+      if (renting) {
         const rental = { package: g("r_package"), ability: g("r_ability"), height: g("r_height"), weight: g("r_weight"), age: g("r_age"), boot: g("r_boot"), days: g("r_days"), stance: g("r_stance"), helmet: g("r_helmet"), insurance: g("r_insurance") };
         ls.set("aspen_rental_" + key(me), rental);
         await store.saveRental(me, rental);
-      } else if (r.renting === "Yes") { await store.deleteRental(me); }
+      } else if (Object.keys(rent).length) { ls.set("aspen_rental_" + key(me), {}); await store.deleteRental(me); }
       toast("Saved. Thank you, " + me + "!"); burst(innerWidth / 2, innerHeight - 90, ["❄️", "⛷️", "❄️", "🏔️"], 22, true);
     } catch (err) { console.error(err); toast("Couldn't save. Check your connection and try again."); }
     btn.disabled = false;
@@ -642,22 +641,25 @@ function renderGroup() {
   const tally = (k) => { const m = {}; for (const r of responses) if (r[k]) (m[r[k]] ||= []).push(r.name); return m; };
   const tallyBlock = (title, k) => { const m = tally(k); return h("div", { class: "tally" }, h("b", {}, title),
     Object.keys(m).length ? Object.entries(m).map(([o, names]) => h("div", { class: "small" }, `${o}: ${names.join(", ")}`)) : h("div", { class: "small muted" }, "No answers yet")); };
-  const skiCount = SKI_DAYS.map((dName) => [dName, responses.filter((r) => (r.skiDays || []).includes(dName)).map((r) => r.name)]);
+  const sk = Object.values(skiDocs), skiNames = (fn) => { const n = PEOPLE.filter((p) => sk.some((d) => d.name === p && fn(d))); return n.length ? n.join(", ") : "nobody yet"; };
+  const skis = (d) => d.on && (d.fri || d.sat);
   const legs = (which) => responses.filter((r) => r[which] && (r[which].flight || r[which].time || r[which].airport))
-    .sort((x, y) => ((x[which].date || "") + (x[which].time || "")).localeCompare((y[which].date || "") + (y[which].time || "")));
-  const fmt = (leg) => [leg.date && new Date(leg.date + "T12:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }), leg.time && new Date("2027-01-01T" + leg.time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })].filter(Boolean).join(", ") || "Time TBD";
-  const legTable = (which) => { const rows = legs(which); return rows.length ? h("div", { class: "scroll" }, h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Who"), h("th", {}, "When"), h("th", {}, "Airport"), h("th", {}, "Flight"), which === "arrive" && h("th", {}, "Ride?"))),
-    h("tbody", {}, rows.map((r) => h("tr", {}, h("td", {}, r.name), h("td", {}, fmt(r[which])), h("td", {}, r[which].airport || ""), h("td", {}, r[which].flight || ""), which === "arrive" && h("td", {}, r.pickup || "")))))) : h("p", { class: "small muted" }, "No flights entered yet."); };
+    .sort((x, y) => (x[which].date || "").localeCompare(y[which].date || ""));
+  const fmt = (leg) => [leg.date && new Date(leg.date + "T12:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }), leg.time && new Date("2027-01-01T" + leg.time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })].filter(Boolean).join(", ") || "Date TBD";
+  const legTable = (which) => { const rows = legs(which); return rows.length ? h("div", { class: "scroll" }, h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Who"), h("th", {}, "Date"), h("th", {}, "Airport"), h("th", {}, "Flight"))),
+    h("tbody", {}, rows.map((r) => h("tr", {}, h("td", {}, r.name), h("td", {}, fmt(r[which])), h("td", {}, r[which].airport || ""), h("td", {}, r[which].flight || "")))))) : h("p", { class: "small muted" }, "No flights entered yet."); };
 
   const kids = [
     h("div", { class: "card" }, h("h2", {}, "Who's answered"),
       h("div", { class: "chips" }, PEOPLE.map((p) => h("span", { class: "chip" + (by[key(p)] ? " done" : "") }, p)))),
     h("div", { class: "card" }, h("h2", {}, "Where everyone stands"),
-      tallyBlock("One splurge-ish dinner", "splurge"), tallyBlock("Cloud Nine on Friday", "cloud9"), tallyBlock("Sushi on Saturday", "sushi"), tallyBlock("Budget", "budgetOk"),
-      tallyBlock("Lift access", "pass"), tallyBlock("Renting gear", "renting"),
-      h("div", { class: "tally" }, h("b", {}, "Ski days"), skiCount.map(([dName, names]) => h("div", { class: "small" }, `${dName}: ${names.length ? names.join(", ") : "nobody yet"}`))),
+      tallyBlock("One splurge dinner", "splurge"), tallyBlock("Cloud Nine on Friday", "cloud9"), tallyBlock("Sushi for one of our dinners", "sushi"),
+      h("div", { class: "tally" }, h("b", {}, "Skiing (from each person's Budget tab)"),
+        [["Friday full day", (d) => d.on && d.fri === "full"], ["Friday half day", (d) => d.on && d.fri === "half"], ["Saturday full day", (d) => d.on && d.sat === "full"], ["Saturday half day", (d) => d.on && d.sat === "half"],
+         ["Buying lift tickets", (d) => skis(d) && d.lift], ["Skiing but not buying lift tickets", (d) => skis(d) && !d.lift], ["Renting gear", (d) => skis(d) && d.rent]]
+          .map(([label, fn]) => h("div", { class: "small" }, `${label}: ${skiNames(fn)}`))),
       responses.some((r) => r.diet) && h("div", { class: "tally" }, h("b", {}, "Food notes"), responses.filter((r) => r.diet).map((r) => h("div", { class: "small" }, `${r.name}: ${r.diet}`)))),
-    h("div", { class: "card" }, h("h2", {}, "Airport pickups"), h("p", { class: "small muted" }, "Sorted by time so we can pair up rides."), h("h3", {}, "Arrivals"), legTable("arrive"), h("h3", { style: "margin-top:14px" }, "Departures"), legTable("depart"))
+    h("div", { class: "card" }, h("h2", {}, "Flights"), h("p", { class: "small muted" }, "Timbers handles airport pickups. Sorted by date."), h("h3", {}, "Arrivals"), legTable("arrive"), h("h3", { style: "margin-top:14px" }, "Departures"), legTable("depart"))
   ];
   const orgCard = h("div", { class: "card" }, h("h2", {}, "Organizer"));
   if (user?.organizer) {
@@ -696,12 +698,18 @@ function startApp() {
   started = true;
   const who = $("#who");
   who.replaceChildren(h("option", { value: "" }, "Who are you?"), ...PEOPLE.map((p) => h("option", { value: p, selected: p === me }, p)));
-  who.addEventListener("change", () => { me = who.value; ls.set("aspen_me", me); renderMe(); renderPlan(true); });
+  who.addEventListener("change", () => { const prev = me; me = who.value; ls.set("aspen_me", me);
+    if (me) { if (skiDocs[me]) ski = skiFrom(skiDocs[me]); else if (prev) ski = { ...SKI_NONE }; else if (ski.on) store.saveSki(me, ski).catch(() => {}); ls.set("aspen_ski2", ski); }
+    renderBudget(); renderMe(); renderPlan(true); });
   document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
   renderBudget(); renderPlan(true); renderMe(); renderGroup();
   $("#hero").addEventListener("click", (e) => { if (!e.target.closest("select")) skiRun(); });
   startSnow();
-  store.watchResponses((all) => { const list = all.filter((d) => d.type !== "picks"); allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderGroup(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
+  store.watchResponses((all) => { const list = all.filter((d) => !d.type);
+    skiDocs = Object.fromEntries(all.filter((d) => d.type === "ski").map((d) => [d.name, d]));
+    if (me && skiDocs[me]) { const next = skiFrom(skiDocs[me]); if (JSON.stringify(next) !== JSON.stringify(ski)) { ski = next; ls.set("aspen_ski2", ski); renderBudget(); } }
+    else if (me && ski.on && !skiSynced) { skiSynced = true; store.saveSki(me, ski).catch(() => {}); }
+    allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderGroup(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
   store.watchSuggestions((list) => { suggestions = list; renderPlan(); });
   const lastTab = ls.get("aspen_tab", "budget"); showTab($("#tab-" + lastTab) ? lastTab : "budget");
 }
