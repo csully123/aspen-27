@@ -199,7 +199,7 @@ const BUDGET = [
   { day: "Saturday", rows: [
     ["Breakfast", 25], ["Lunch on the mountain", 40], ["Drinks before dinner", 20], ["Splurge dinner", 225], ["Going out", 50] ] },
   { day: "Sunday", rows: [ ["Brunch", 40] ] },
-  { day: "Whole trip", rows: [ ["Tips for the house staff", 20], ["Ubers and rides", 20] ] }
+  { day: "Whole trip", rows: [ ["Tips for the house staff", 50], ["Ubers and rides", 20, false, "Timbers Club mostly has shuttles we can use for free"] ] }
 ];
 // Skiing costs, added to Friday and Saturday based on what each person picks.
 const SKI = {
@@ -373,7 +373,7 @@ function renderBudget() {
     ...BUDGET.map((d) => h("div", { class: "card daycard" },
       h("h2", {}, h("span", {}, d.day), h("span", { class: "tot" }, money0(dayTotal(d)))),
       h("table", {}, h("tbody", {}, rowsFor(d).map((r) => h("tr", {},
-        h("td", {}, r[0], r[2] && h("span", { class: "skitag" }, "ski")), h("td", { class: "num" }, money0(r[1])))))))),
+        h("td", {}, r[0], r[2] && h("span", { class: "skitag" }, "ski"), r[3] && h("div", { class: "small muted" }, "(" + r[3] + ")")), h("td", { class: "num" }, money0(r[1])))))))),
     grand,
     h("div", { class: "card" },
       h("h2", {}, "Cloud Nine would be extra 🍾"),
