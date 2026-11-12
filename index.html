@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Aspen 2027</title>
+<style>
+  :root {
+    --bg: #f4f1ea; --card: #ffffff; --ink: #1c2530; --muted: #5f6b78; --line: #ddd7ca;
+    --accent: #b4532a; --accent-ink: #ffffff; --soft: #f0e6da; --good: #2f6b4f; --warn: #9a6a00;
+    --pine: #24403a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12171c; --card: #1b232b; --ink: #e9edf1; --muted: #9aa6b2; --line: #2e3944;
+      --accent: #e08a5b; --accent-ink: #1a1208; --soft: #262019; --good: #7fc7a3; --warn: #e0b85b;
+      --pine: #0e1f1c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 600; line-height: 1.2; margin: 0; }
+  h1 { font-size: 1.7rem; } h2 { font-size: 1.3rem; margin-bottom: 4px; } h3 { font-size: 1.05rem; }
+  p { margin: 0 0 10px; }
+  .muted { color: var(--muted); } .small { font-size: .875rem; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header.top { background: var(--pine); color: #f3efe6; padding: 22px 0 18px; }
+  header.top .sub { color: #c3cfc9; font-size: .9rem; margin-top: 4px; }
+  header.top .row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  header.top select { background: #ffffff18; color: #fff; border: 1px solid #ffffff40; }
+  header.top select option { color: #111; }
+  nav.tabs { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+  nav.tabs .wrap { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+  nav.tabs button { flex: 1 0 auto; background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted);
+    font: inherit; font-weight: 600; padding: 12px 10px; cursor: pointer; white-space: nowrap; }
+  nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  main { padding: 18px 0 80px; }
+  section.tab { display: none; } section.tab.on { display: block; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 0 0 14px; }
+  .banner { background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: .9rem; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.day td { font-weight: 700; padding-top: 14px; border-bottom: 0; }
+  tr.sub td { font-weight: 600; } tr.total td { font-weight: 700; font-size: 1.05rem; border-bottom: 0; padding-top: 12px; }
+  .slot { border-top: 1px solid var(--line); padding: 12px 0; } .slot:first-of-type { border-top: 0; }
+  .slot .label { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+  .slot .last { color: var(--muted); font-size: .9rem; margin: 2px 0 8px; }
+  .pick { background: var(--soft); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+  .pick .name { font-weight: 700; } .pick .tag { font-size: .72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; }
+  .pick .res { font-size: .875rem; margin-top: 4px; color: var(--good); }
+  label.q { display: block; font-weight: 600; margin: 16px 0 6px; }
+  .hint { font-weight: 400; color: var(--muted); font-size: .875rem; display: block; margin-top: 2px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opts label { border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; background: var(--card); user-select: none; }
+  .opts input { position: absolute; opacity: 0; pointer-events: none; }
+  .opts label:has(input:checked) { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .opts label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input[type=text], input[type=password], input[type=email], input[type=number], input[type=date], input[type=time], select, textarea {
+    width: 100%; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  textarea { min-height: 84px; resize: vertical; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid2 > div > span, .field > span { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 3px; }
+  @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+  button.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; font: inherit; font-weight: 700; padding: 12px 18px; cursor: pointer; }
+  button.btn.ghost { background: none; color: var(--accent); border: 1px solid var(--accent); }
+  button.link { background: none; border: 0; color: var(--accent); font: inherit; padding: 0; cursor: pointer; text-decoration: underline; }
+  .savebar { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border-radius: 999px; padding: 4px 10px; font-size: .85rem; border: 1px solid var(--line); }
+  .chip.done { background: var(--good); color: var(--card); border-color: var(--good); }
+  .tally { margin: 10px 0; } .tally b { display: block; }
+  .scroll { overflow-x: auto; }
+  #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--pine); }
+  #gate .box { background: var(--card); border-radius: 14px; padding: 26px; width: 100%; max-width: 360px; }
+  #gate .err { color: #c0392b; min-height: 1.4em; font-size: .9rem; margin-top: 8px; }
+  .hide { display: none !important; }
+  .sugg { border-top: 1px solid var(--line); padding: 10px 0; } .sugg:first-child { border-top: 0; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
+    padding: 10px 16px; border-radius: 999px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+  #toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <form class="box" id="gateForm">
+    <h1>Aspen 2027</h1>
+    <p class="muted" style="margin-top:6px">Enter the trip password.</p>
+    <input type="password" id="gatePw" autocomplete="current-password" placeholder="Password" aria-label="Trip password">
+    <div class="err" id="gateErr"></div>
+    <button class="btn" style="width:100%">Enter</button>
+    <p class="small muted" id="gateDemo" style="margin:12px 0 0"></p>
+  </form>
+</div>
+
+<div id="app" class="hide">
+  <header class="top"><div class="wrap"><div class="row">
+    <div><h1>Aspen 2027</h1><div class="sub">Thu Jan 21 to Sun Jan 24 · Timbers Club, Snowmass · 7 of us</div></div>
+    <div><select id="who" aria-label="Who are you?"></select></div>
+  </div></div></header>
+  <nav class="tabs"><div class="wrap" role="tablist">
+    <button data-tab="budget" aria-selected="true">Budget</button>
+    <button data-tab="plan">Plan</button>
+    <button data-tab="me">My answers</button>
+    <button data-tab="group">Group</button>
+    <button data-tab="ideas">Ideas</button>
+  </div></nav>
+  <main><div class="wrap">
+    <div class="banner hide" id="demoBanner"></div>
+    <section class="tab on" id="tab-budget"></section>
+    <section class="tab" id="tab-plan"></section>
+    <section class="tab" id="tab-me"></section>
+    <section class="tab" id="tab-group"></section>
+    <section class="tab" id="tab-ideas"></section>
+  </div></main>
+</div>
+<div id="toast" role="status"></div>
+
+<script type="module">
+/* ======================================================================
+   1. SETTINGS: the only part you need to edit to go live.
+   ====================================================================== */
+const CONFIG = {
+  // Paste your Firebase web app config here (Firebase console > Project settings > Your apps).
+  firebase: {
+    apiKey: "AIzaSyD-iJje4XHnXx1T4CU7vXb8KlcjMWlWyjA",
+    authDomain: "aspen-2027.firebaseapp.com",
+    projectId: "aspen-2027",
+    appId: "1:822786302717:web:41cb40ccc20c218e499494"
+  },
+  // The one shared login everyone uses. Create this user in Firebase Authentication.
+  // The password you give that user is the trip password.
+  sharedEmail: "aspen-group@example.com",
+  // Collection name prefix in Firestore.
+  prefix: "aspen2027_"
+};
+
+const PEOPLE = ["Chris", "Ali", "Dan", "Paige", "Blake", "Katie", "Andy"];
+
+/* ======================================================================
+   2. TRIP CONTENT: edit freely.
+   ====================================================================== */
+// Last year's real spend, average per person (total bill divided by people who shared it).
+const BUDGET = [
+  { day: "Thursday", rows: [
+    ["Groceries for the weekend", 24.00],
+    ["Happy hour (Clark's Oyster Bar)", 53.18],
+    ["Dinner (J-Bar)", 111.43] ] },
+  { day: "Friday", rows: [
+    ["Après (Little Nell)", 66.53],
+    ["Dinner (Tasters pizza delivery)", 12.64] ] },
+  { day: "Saturday", rows: [
+    ["Breakfast (Daly Diner)", 21.08],
+    ["Drinks before dinner (Aspen Brewing Co)", 15.09],
+    ["Dinner (Caribou Club)", 223.14] ] },
+  { day: "Sunday", rows: [
+    ["Brunch (White House Tavern)", 39.28] ] },
+  { day: "Whole trip", rows: [
+    ["Tips (housekeeping, concierge, shuttle)", 20.00],
+    ["Ubers", 16.20] ] }
+];
+const CLOUD9_LAST_YEAR = 1293.04;   // reservation + day-of spend, split evenly
+const CLOUD9_THIS_YEAR = 985;       // about $685 to book + about $300 there
+const SKI_COSTS = [
+  ["Lift tickets, if you don't have an Ikon Pass", "About $279 Friday and $309 Saturday at full price. Cheaper if bought online ahead."],
+  ["Ski or snowboard rental (delivered to Timbers)", "About $62 a day at last season's Timbers rate. Helmet about $14 a day."]
+];
+
+// Where we went last year and what's recommended this year.
+const PLAN = [
+  { day: "Thursday, Jan 21", slots: [
+    { label: "Happy hour", last: "Clark's Oyster Bar ($53 each)", picks: [
+      { name: "Clark's Oyster Bar", tag: "Pick", desc: "Same as last year because it was great. Packed oyster bar with a 3 to 5 PM happy hour: $10 martinis, $12 burgers and discounted oysters.",
+        res: "Reservations open Dec 22 (30 days out). Booking a table for 7 around 4:30." } ] },
+    { label: "Dinner", last: "J-Bar ($111 each)", picks: [
+      { name: "Stay at Clark's", desc: "Keep the table and roll happy hour into dinner. Linguine with clams, cioppino, lobster rolls.", res: "Same reservation as happy hour." },
+      { name: "Las Montañas", desc: "Lively upstairs Mexican spot with mountain views. Sizzling fajitas, lobster quesadillas and margaritas. About $75 to $110 each.",
+        res: "Books on OpenTable. Open through Dec 31 right now, so Jan 21 should open in December." } ] }
+  ] },
+  { day: "Friday, Jan 22", slots: [
+    { label: "Lunch", last: "Cloud Nine ($1,293 each, split evenly)", picks: [
+      { name: "Cloud Nine", tag: "Vote", desc: "The champagne-spraying lunch party at Aspen Highlands, 1:45 PM seating. About $1,000 each this year. Vote in My answers.",
+        res: "Books on Tock. Not open yet; Cloud Nine opens for the season Dec 12." },
+      { name: "Ski Snowmass, lunch on the mountain", desc: "The easy option if we skip Cloud Nine. Ullrhof, the mid-mountain restaurant, reopens this season after a full rebuild.", res: "No reservation needed." } ] },
+    { label: "Après", last: "The Little Nell ($67 each)", picks: [
+      { name: "Venga Venga", tag: "Pick", desc: "Slope-side patio at the bottom of Fanny Hill in Snowmass with an outdoor bar and fire pits. We can ski right to it, and it's close to Timbers.",
+        res: "Walk up. Calling ahead to hold space for 7." } ] },
+    { label: "Dinner", last: "Tasters pizza delivery ($13 each)", picks: [
+      { name: "Tasters and game night", tag: "Pick", desc: "Pizza delivered to Timbers, games and the hot tub.", res: "No reservation needed." } ] }
+  ] },
+  { day: "Saturday, Jan 23", slots: [
+    { label: "Après", last: "Free après at Timbers", picks: [
+      { name: "Free après at Timbers", tag: "Pick", desc: "3:30 to 4:30 PM at the club, then get ready to go out.", res: "No reservation needed." } ] },
+    { label: "Drinks before dinner", last: "Aspen Brewing Co ($15 each)", picks: [
+      { name: "Aspen Public House", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
+      { name: "Aspen Brewing Co", desc: "Last year's spot. Very chill: craft beer, pizza, darts and pool.", res: "Walk in." } ] },
+    { label: "Dinner (the splurge)", last: "Caribou Club ($223 each)", picks: [
+      { name: "Kenichi", tag: "First choice", desc: "Sushi and Japanese with a buzzy bar scene and big tables built for groups. Miso black cod, rolls, wagyu on a hot rock. About $130 to $175 each.",
+        res: "Books on OpenTable. Open through Dec 23 right now, so Jan 23 should open in mid-December. $30 each deposit that goes toward the bill." },
+      { name: "Jing", desc: "Louder Chinese and sushi spot with good music, open until 10. Similar price to Kenichi.", res: "Booking window to be confirmed." },
+      { name: "Matsuhisa", desc: "Nobu Matsuhisa's Aspen restaurant. The big-name option and the priciest, about $175 to $250 each.", res: "Reservations open Dec 24 (30 days out), by phone for 7." },
+      { name: "Caribou Club", desc: "Last year's dinner. Members club with a DJ from 10 PM, so dinner turns into the night out.", res: "By arrangement, same as last year." } ] },
+    { label: "Night out", last: "Stayed at Caribou Club", picks: [
+      { name: "Escobar, Sterling or Silver City", desc: "Escobar and Sterling are the DJ clubs. Silver City is a western saloon with live bands.", res: "Walk in." } ] }
+  ] },
+  { day: "Sunday, Jan 24", slots: [
+    { label: "Brunch", last: "White House Tavern ($39 each)", picks: [
+      { name: "Bear Den", desc: "Cozy all-day spot in a historic house. Brunch runs 9 AM to 3 PM and they take reservations, which helps with 7.", res: "Booking once winter hours are confirmed." },
+      { name: "White House Tavern", desc: "Last year's brunch. Great sandwiches, but walk-in only, so there may be a wait for 7.", res: "Walk in only." } ] }
+  ] }
+];
+
+/* ======================================================================
+   3. APP CODE: no need to edit below this line.
+   ====================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const h = (tag, attrs = {}, ...kids) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v; else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "html") el.innerHTML = v; else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat(Infinity)) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  return el;
+};
+const money = (n) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money0 = (n) => "$" + Math.round(n).toLocaleString("en-US");
+const key = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
+const toast = (msg) => { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 2200); };
+const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+const LIVE = !CONFIG.firebase.apiKey.startsWith("PASTE");
+const C = (n) => CONFIG.prefix + n;
+
+/* ---------- data store: Firebase when configured, this browser only otherwise ---------- */
+let store;
+async function makeFirebaseStore() {
+  const V = "10.12.2", base = `https://www.gstatic.com/firebasejs/${V}/`;
+  const [{ initializeApp }, A, F] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
+  const app = initializeApp(CONFIG.firebase), auth = A.getAuth(app), db = F.getFirestore(app);
+  await A.setPersistence(auth, A.browserLocalPersistence);
+  return {
+    onAuth: (cb) => A.onAuthStateChanged(auth, (u) => cb(u ? { email: u.email, organizer: u.email !== CONFIG.sharedEmail } : null)),
+    signIn: (pw) => A.signInWithEmailAndPassword(auth, CONFIG.sharedEmail, pw),
+    signInOrganizer: (email, pw) => A.signInWithEmailAndPassword(auth, email, pw),
+    signOut: () => A.signOut(auth),
+    saveResponse: (name, data) => F.setDoc(F.doc(db, C("responses"), key(name)), { ...data, name, updatedAt: F.serverTimestamp() }),
+    saveRental: (name, data) => F.setDoc(F.doc(db, C("rentals"), key(name)), { ...data, name, updatedAt: F.serverTimestamp() }),
+    deleteRental: (name) => F.setDoc(F.doc(db, C("rentals"), key(name)), { name, cancelled: true, updatedAt: F.serverTimestamp() }),
+    watchResponses: (cb) => F.onSnapshot(F.collection(db, C("responses")), (s) => cb(s.docs.map((d) => d.data())), () => cb([])),
+    watchSuggestions: (cb) => F.onSnapshot(F.query(F.collection(db, C("suggestions")), F.orderBy("createdAt", "desc")), (s) => cb(s.docs.map((d) => ({ ...d.data(), at: d.data().createdAt?.toDate?.() }))), () => cb([])),
+    addSuggestion: (name, text) => F.addDoc(F.collection(db, C("suggestions")), { name, text, createdAt: F.serverTimestamp() }),
+    listRentals: async () => (await F.getDocs(F.collection(db, C("rentals")))).docs.map((d) => d.data())
+  };
+}
+function makeLocalStore() {
+  const subs = { responses: [], suggestions: [] };
+  const emit = (k) => subs[k].forEach((cb) => cb(k === "responses" ? Object.values(ls.get("demo_responses", {})) : ls.get("demo_suggestions", [])));
+  let authCb = () => {};
+  return {
+    onAuth: (cb) => { authCb = cb; cb(ls.get("demo_user", null)); },
+    signIn: async () => { const u = { email: "demo", organizer: false }; ls.set("demo_user", u); authCb(u); },
+    signInOrganizer: async () => { const u = { email: "organizer", organizer: true }; ls.set("demo_user", u); authCb(u); },
+    signOut: async () => { ls.set("demo_user", null); authCb(null); },
+    saveResponse: async (name, data) => { const all = ls.get("demo_responses", {}); all[key(name)] = { ...data, name }; ls.set("demo_responses", all); emit("responses"); },
+    saveRental: async (name, data) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { ...data, name }; ls.set("demo_rentals", all); },
+    deleteRental: async (name) => { const all = ls.get("demo_rentals", {}); all[key(name)] = { name, cancelled: true }; ls.set("demo_rentals", all); },
+    watchResponses: (cb) => { subs.responses.push(cb); emit("responses"); },
+    watchSuggestions: (cb) => { subs.suggestions.push(cb); emit("suggestions"); },
+    addSuggestion: async (name, text) => { const all = ls.get("demo_suggestions", []); all.unshift({ name, text, at: new Date().toISOString() }); ls.set("demo_suggestions", all); emit("suggestions"); },
+    listRentals: async () => Object.values(ls.get("demo_rentals", {}))
+  };
+}
+
+/* ---------- state ---------- */
+let user = null, me = ls.get("aspen_me", ""), responses = [], suggestions = [], started = false;
+
+/* ---------- budget tab ---------- */
+function renderBudget() {
+  const base = BUDGET.reduce((s, d) => s + d.rows.reduce((a, r) => a + r[1], 0), 0);
+  const body = h("tbody");
+  for (const d of BUDGET) {
+    body.append(h("tr", { class: "day" }, h("td", { colspan: 2 }, d.day)));
+    for (const [item, amt] of d.rows) body.append(h("tr", {}, h("td", {}, item), h("td", { class: "num" }, money(amt))));
+  }
+  body.append(h("tr", { class: "total" }, h("td", {}, "Budget per person"), h("td", { class: "num" }, money0(base))));
+  $("#tab-budget").replaceChildren(
+    h("div", { class: "card" },
+      h("h2", {}, "The budget"),
+      h("p", { class: "muted" }, "This is what last year actually cost each person on average. Plan on about the same this year. Flights aren't included."),
+      h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Last year"), h("th", { class: "num" }, "Avg per person"))), body)),
+    h("div", { class: "card" },
+      h("h2", {}, "Cloud Nine is extra"),
+      h("p", {}, "Last year Cloud Nine came to ", h("b", {}, money0(CLOUD9_LAST_YEAR)), " a person when split evenly. This year it would be about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " each (about $685 to book plus about $300 there)."),
+      h("table", {}, h("tbody", {},
+        h("tr", {}, h("td", {}, "Trip without Cloud Nine"), h("td", { class: "num" }, money0(base))),
+        h("tr", { class: "sub" }, h("td", {}, "Trip with Cloud Nine"), h("td", { class: "num" }, money0(base + CLOUD9_THIS_YEAR))))),
+      h("p", { class: "small muted", style: "margin-top:10px" }, "Vote on it in My answers. We need to decide soon.")),
+    h("div", { class: "card" },
+      h("h2", {}, "Skiing costs, if they apply to you"),
+      h("table", {}, h("tbody", {}, SKI_COSTS.map(([a, b]) => h("tr", {}, h("td", {}, h("b", {}, a), h("div", { class: "small muted" }, b)))))))
+  );
+}
+
+/* ---------- plan tab ---------- */
+function renderPlan() {
+  $("#tab-plan").replaceChildren(
+    h("p", { class: "muted" }, "Where we went last year, and what's recommended this year. Nothing is booked yet."),
+    PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
+      d.slots.map((s) => h("div", { class: "slot" },
+        h("div", { class: "label" }, s.label),
+        h("div", { class: "last" }, "Last year: " + s.last),
+        s.picks.map((p) => h("div", { class: "pick" },
+          h("div", {}, h("span", { class: "name" }, p.name), p.tag && h("span", { class: "tag" }, p.tag)),
+          h("div", { class: "small" }, p.desc),
+          h("div", { class: "res" }, p.res)))))))
+  );
+}
+
+/* ---------- my answers tab ---------- */
+const Q = {
+  splurge: { q: "Are you good with one splurge-ish dinner?", hint: "Saturday night, about $130 to $225 a person.", opts: ["Yes", "No", "Depends on the price"] },
+  cloud9: { q: "Do you want to do Cloud Nine on Friday?", hint: "About $1,000 a person. Friday is the only day that works and we have to decide soon.", opts: ["Yes", "No", "Only if everyone's in"] },
+  sushi: { q: "Are you good with sushi for the Saturday dinner?", opts: ["Yes", "No", "Fine, I'll order cooked dishes"] },
+  budgetOk: { q: "Does the budget on the Budget tab work for you?", opts: ["Yes", "I'd like to spend less", "Happy to spend more"] },
+  pass: { q: "Do you have an Ikon Pass, or will you need lift tickets?", hint: "The Ikon Base Pass only covers Snowmass, not Aspen Mountain or Highlands.", opts: ["Ikon Pass", "Ikon Base Pass", "Need lift tickets", "Not skiing"] },
+  renting: { q: "Will you be renting skis or a snowboard?", opts: ["Yes", "No"] },
+  pickup: { q: "Do you need a ride from the airport?", opts: ["Yes", "No, I'm sorted", "I can share a ride"] }
+};
+const SKI_DAYS = ["Thu Jan 21 (afternoon)", "Fri Jan 22", "Sat Jan 23", "Sun Jan 24 (morning)"];
+const AIRPORTS = ["Aspen (ASE)", "Eagle/Vail (EGE)", "Denver (DEN)", "Driving", "Other"];
+const RENTAL_FIELDS = { packages: ["Performance skis", "Demo skis", "Snowboard", "Demo snowboard"], ability: ["First time ever", "I (beginner)", "II (intermediate)", "III (advanced)"] };
+
+function radio(name, opts, val) {
+  return h("div", { class: "opts" }, opts.map((o) => h("label", {}, h("input", { type: "radio", name, value: o, checked: val === o }), o)));
+}
+function field(label, input) { return h("div", { class: "field" }, h("span", {}, label), input); }
+
+function renderMe() {
+  const root = $("#tab-me");
+  if (!me) { root.replaceChildren(h("div", { class: "card" }, h("h2", {}, "Who are you?"), h("p", { class: "muted" }, "Pick your name at the top of the page to fill in your answers."))); return; }
+  const r = responses.find((x) => key(x.name || "") === key(me)) || {};
+  const rent = ls.get("aspen_rental_" + key(me), {});
+  const a = r.arrive || {}, d = r.depart || {};
+  const inp = (name, type, val, extra = {}) => h("input", { type, name, value: val ?? "", ...extra });
+  const sel = (name, opts, val) => h("select", { name }, h("option", { value: "" }, "Choose"), opts.map((o) => h("option", { value: o, selected: val === o }, o)));
+
+  const rentalBox = h("div", { class: "card", id: "rentalBox" },
+    h("h3", {}, "Rental details"),
+    h("p", { class: "small muted" }, "This goes on the ski shop's form so your gear is waiting at Timbers. Only Chris can see these answers."),
+    h("div", { class: "grid2" },
+      field("What are you renting?", sel("r_package", RENTAL_FIELDS.packages, rent.package)),
+      field("Ability", sel("r_ability", RENTAL_FIELDS.ability, rent.ability)),
+      field("Height (for example 5'10\")", inp("r_height", "text", rent.height)),
+      field("Weight (lb)", inp("r_weight", "number", rent.weight, { inputmode: "numeric", min: 50, max: 400 })),
+      field("Age", inp("r_age", "number", rent.age, { inputmode: "numeric", min: 18, max: 99 })),
+      field("Boot or shoe size", inp("r_boot", "text", rent.boot)),
+      field("Number of rental days", sel("r_days", ["1", "2", "3", "4"], rent.days)),
+      field("Stance (snowboard only)", sel("r_stance", ["Regular (left foot forward)", "Goofy (right foot forward)", "Not sure"], rent.stance))),
+    h("label", { class: "q" }, "Helmet?", h("span", { class: "hint" }, "About $14 a day.")), radio("r_helmet", ["Yes", "No"], rent.helmet),
+    h("label", { class: "q" }, "Damage insurance?", h("span", { class: "hint" }, "$3 a day. Doesn't cover loss or theft.")), radio("r_insurance", ["Yes", "No"], rent.insurance));
+
+  const form = h("form", { id: "meForm" },
+    h("div", { class: "card" },
+      h("h2", {}, me + "'s answers"),
+      h("p", { class: "muted small" }, "You can come back and change these any time."),
+      ["splurge", "cloud9", "sushi", "budgetOk"].map((k) => [h("label", { class: "q" }, Q[k].q, Q[k].hint && h("span", { class: "hint" }, Q[k].hint)), radio(k, Q[k].opts, r[k])])),
+    h("div", { class: "card" },
+      h("h2", {}, "Skiing"),
+      h("label", { class: "q" }, Q.pass.q, h("span", { class: "hint" }, Q.pass.hint)), radio("pass", Q.pass.opts, r.pass),
+      h("label", { class: "q" }, "Which days are you planning to ski?", h("span", { class: "hint" }, "Pick all that apply, or none if you're not skiing.")),
+      h("div", { class: "opts" }, SKI_DAYS.map((o) => h("label", {}, h("input", { type: "checkbox", name: "skiDays", value: o, checked: (r.skiDays || []).includes(o) }), o))),
+      h("label", { class: "q" }, Q.renting.q), radio("renting", Q.renting.opts, r.renting)),
+    rentalBox,
+    h("div", { class: "card" },
+      h("h2", {}, "Flights and airport pickup"),
+      h("p", { class: "small muted" }, "Add what you know now and update it once you book."),
+      h("h3", { style: "margin-top:8px" }, "Arriving"),
+      h("div", { class: "grid2" },
+        field("Airport", sel("a_airport", AIRPORTS, a.airport)), field("Airline and flight number", inp("a_flight", "text", a.flight)),
+        field("Date", inp("a_date", "date", a.date || "2027-01-21")), field("Landing time (Mountain)", inp("a_time", "time", a.time))),
+      h("h3", { style: "margin-top:16px" }, "Leaving"),
+      h("div", { class: "grid2" },
+        field("Airport", sel("d_airport", AIRPORTS, d.airport)), field("Airline and flight number", inp("d_flight", "text", d.flight)),
+        field("Date", inp("d_date", "date", d.date || "2027-01-24")), field("Takeoff time (Mountain)", inp("d_time", "time", d.time))),
+      h("label", { class: "q" }, Q.pickup.q), radio("pickup", Q.pickup.opts, r.pickup)),
+    h("div", { class: "card" },
+      h("h2", {}, "Anything else"),
+      h("label", { class: "q" }, "Food allergies or things you don't eat?"), h("input", { type: "text", name: "diet", value: r.diet ?? "", placeholder: "None" }),
+      h("label", { class: "q" }, "Anything else Chris should know?"), h("textarea", { name: "notes" }, r.notes ?? "")),
+    h("div", { class: "savebar" }, h("button", { class: "btn" }, "Save my answers"), h("span", { class: "small muted", id: "saveNote" }, r.name ? "Saved before. Saving again updates it." : "")));
+
+  const syncRental = () => rentalBox.classList.toggle("hide", new FormData(form).get("renting") !== "Yes");
+  form.addEventListener("change", syncRental); syncRental();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = new FormData(form), g = (k) => (f.get(k) || "").toString().trim();
+    const data = { splurge: g("splurge"), cloud9: g("cloud9"), sushi: g("sushi"), budgetOk: g("budgetOk"), pass: g("pass"), skiDays: f.getAll("skiDays"), renting: g("renting"), pickup: g("pickup"),
+      arrive: { airport: g("a_airport"), flight: g("a_flight"), date: g("a_date"), time: g("a_time") }, depart: { airport: g("d_airport"), flight: g("d_flight"), date: g("d_date"), time: g("d_time") }, diet: g("diet"), notes: g("notes") };
+    const btn = form.querySelector("button.btn"); btn.disabled = true;
+    try {
+      await store.saveResponse(me, data);
+      if (data.renting === "Yes") {
+        const rental = { package: g("r_package"), ability: g("r_ability"), height: g("r_height"), weight: g("r_weight"), age: g("r_age"), boot: g("r_boot"), days: g("r_days"), stance: g("r_stance"), helmet: g("r_helmet"), insurance: g("r_insurance") };
+        ls.set("aspen_rental_" + key(me), rental);
+        await store.saveRental(me, rental);
+      } else if (r.renting === "Yes") { await store.deleteRental(me); }
+      toast("Saved. Thank you, " + me + "!");
+    } catch (err) { console.error(err); toast("Couldn't save. Check your connection and try again."); }
+    btn.disabled = false;
+  });
+  root.replaceChildren(form);
+}
+
+/* ---------- group tab ---------- */
+function renderGroup() {
+  const root = $("#tab-group");
+  const by = Object.fromEntries(responses.map((r) => [key(r.name || ""), r]));
+  const tally = (k) => { const m = {}; for (const r of responses) if (r[k]) (m[r[k]] ||= []).push(r.name); return m; };
+  const tallyBlock = (title, k) => { const m = tally(k); return h("div", { class: "tally" }, h("b", {}, title),
+    Object.keys(m).length ? Object.entries(m).map(([o, names]) => h("div", { class: "small" }, `${o}: ${names.join(", ")}`)) : h("div", { class: "small muted" }, "No answers yet")); };
+  const skiCount = SKI_DAYS.map((dName) => [dName, responses.filter((r) => (r.skiDays || []).includes(dName)).map((r) => r.name)]);
+  const legs = (which) => responses.filter((r) => r[which] && (r[which].flight || r[which].time || r[which].airport))
+    .sort((x, y) => ((x[which].date || "") + (x[which].time || "")).localeCompare((y[which].date || "") + (y[which].time || "")));
+  const fmt = (leg) => [leg.date && new Date(leg.date + "T12:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }), leg.time && new Date("2027-01-01T" + leg.time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })].filter(Boolean).join(", ") || "Time TBD";
+  const legTable = (which) => { const rows = legs(which); return rows.length ? h("div", { class: "scroll" }, h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Who"), h("th", {}, "When"), h("th", {}, "Airport"), h("th", {}, "Flight"), which === "arrive" && h("th", {}, "Ride?"))),
+    h("tbody", {}, rows.map((r) => h("tr", {}, h("td", {}, r.name), h("td", {}, fmt(r[which])), h("td", {}, r[which].airport || ""), h("td", {}, r[which].flight || ""), which === "arrive" && h("td", {}, r.pickup || "")))))) : h("p", { class: "small muted" }, "No flights entered yet."); };
+
+  const kids = [
+    h("div", { class: "card" }, h("h2", {}, "Who's answered"),
+      h("div", { class: "chips" }, PEOPLE.map((p) => h("span", { class: "chip" + (by[key(p)] ? " done" : "") }, p)))),
+    h("div", { class: "card" }, h("h2", {}, "Where everyone stands"),
+      tallyBlock("One splurge-ish dinner", "splurge"), tallyBlock("Cloud Nine on Friday", "cloud9"), tallyBlock("Sushi on Saturday", "sushi"), tallyBlock("Budget", "budgetOk"),
+      tallyBlock("Lift access", "pass"), tallyBlock("Renting gear", "renting"),
+      h("div", { class: "tally" }, h("b", {}, "Ski days"), skiCount.map(([dName, names]) => h("div", { class: "small" }, `${dName}: ${names.length ? names.join(", ") : "nobody yet"}`))),
+      responses.some((r) => r.diet) && h("div", { class: "tally" }, h("b", {}, "Food notes"), responses.filter((r) => r.diet).map((r) => h("div", { class: "small" }, `${r.name}: ${r.diet}`)))),
+    h("div", { class: "card" }, h("h2", {}, "Airport pickups"), h("p", { class: "small muted" }, "Sorted by time so we can pair up rides."), h("h3", {}, "Arrivals"), legTable("arrive"), h("h3", { style: "margin-top:14px" }, "Departures"), legTable("depart"))
+  ];
+  const orgCard = h("div", { class: "card" }, h("h2", {}, "Organizer"));
+  if (user?.organizer) {
+    const notes = responses.filter((r) => r.notes);
+    const out = h("div", {}, h("p", { class: "small muted" }, "Loading rentals..."));
+    orgCard.append(...[h("p", { class: "small muted" }, "Only you can see this part."),
+      notes.length ? h("div", { class: "tally" }, h("b", {}, "Notes for you"), notes.map((r) => h("div", { class: "small" }, `${r.name}: ${r.notes}`))) : null,
+      h("h3", { style: "margin:10px 0 6px" }, "Rental details"), out,
+      h("p", { style: "margin-top:12px" }, h("button", { class: "link", onclick: () => store.signOut().then(() => location.reload()) }, "Sign out"))].filter(Boolean));
+    store.listRentals().then((list) => {
+      const rows = list.filter((x) => !x.cancelled);
+      if (!rows.length) { out.replaceChildren(h("p", { class: "small muted" }, "Nobody has entered rental details yet.")); return; }
+      const cols = [["Name", "name"], ["Weight", "weight"], ["Height", "height"], ["Age", "age"], ["Ability", "ability"], ["Package", "package"], ["Boot/shoe", "boot"], ["Stance", "stance"], ["Insurance", "insurance"], ["Helmet", "helmet"], ["Days", "days"]];
+      const text = [cols.map((c) => c[0]).join("\t"), ...rows.map((x) => cols.map((c) => x[c[1]] || "").join("\t"))].join("\n");
+      out.replaceChildren(h("div", { class: "scroll" }, h("table", {}, h("thead", {}, h("tr", {}, cols.map((c) => h("th", {}, c[0])))), h("tbody", {}, rows.map((x) => h("tr", {}, cols.map((c) => h("td", {}, x[c[1]] || ""))))))),
+        h("p", { style: "margin-top:10px" }, h("button", { class: "btn ghost", onclick: () => navigator.clipboard.writeText(text).then(() => toast("Copied. Paste into the rental form.")) }, "Copy for the rental form")));
+    }).catch(() => out.replaceChildren(h("p", { class: "small muted" }, "Couldn't load rentals. Check that the organizer email in your Firestore rules matches this login.")));
+  } else {
+    const f = h("form", { class: "hide" }, h("div", { class: "grid2" }, field("Email", h("input", { type: "email", name: "email", autocomplete: "username" })), field("Password", h("input", { type: "password", name: "pw", autocomplete: "current-password" }))),
+      h("p", { style: "margin-top:10px" }, h("button", { class: "btn ghost" }, "Sign in as organizer")), h("div", { class: "small", id: "orgErr", style: "color:#c0392b" }));
+    f.addEventListener("submit", async (e) => { e.preventDefault(); try { await store.signInOrganizer(f.email.value.trim(), f.pw.value); location.reload(); } catch { $("#orgErr").textContent = "That didn't work."; } });
+    orgCard.append(h("p", { class: "small muted" }, "Rental details and private notes are only visible to Chris."), h("button", { class: "link", onclick: () => f.classList.toggle("hide") }, "Chris: sign in to see them"), f);
+  }
+  kids.push(orgCard);
+  root.replaceChildren(...kids);
+}
+
+/* ---------- ideas tab ---------- */
+function renderIdeas() {
+  const ta = h("textarea", { placeholder: "A restaurant, a bar, an activity, a better plan for a day..." });
+  const form = h("form", {}, ta, h("p", { style: "margin-top:10px" }, h("button", { class: "btn" }, "Add suggestion")));
+  form.addEventListener("submit", async (e) => { e.preventDefault(); const text = ta.value.trim(); if (!text) return; if (!me) { toast("Pick your name at the top first."); return; }
+    try { await store.addSuggestion(me, text); ta.value = ""; toast("Added. Thank you!"); } catch { toast("Couldn't add that. Try again."); } });
+  $("#tab-ideas").replaceChildren(
+    h("div", { class: "card" }, h("h2", {}, "Suggestions"), h("p", { class: "muted" }, "Got an idea for the trip? Add it here and everyone can see it."), form),
+    h("div", { class: "card" }, suggestions.length ? suggestions.map((s) => h("div", { class: "sugg" }, h("div", {}, s.text),
+      h("div", { class: "small muted" }, s.name + (s.at ? " · " + new Date(s.at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "")))) : h("p", { class: "muted", style: "margin:0" }, "No suggestions yet. Be the first."))
+  );
+}
+
+/* ---------- shell ---------- */
+function showTab(name) {
+  document.querySelectorAll("nav.tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === name));
+  document.querySelectorAll("section.tab").forEach((s) => s.classList.toggle("on", s.id === "tab-" + name));
+  ls.set("aspen_tab", name); window.scrollTo(0, 0);
+}
+function startApp() {
+  if (started) { renderGroup(); return; }
+  started = true;
+  const who = $("#who");
+  who.replaceChildren(h("option", { value: "" }, "Who are you?"), ...PEOPLE.map((p) => h("option", { value: p, selected: p === me }, p)));
+  who.addEventListener("change", () => { me = who.value; ls.set("aspen_me", me); renderMe(); });
+  document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
+  renderBudget(); renderPlan(); renderMe(); renderGroup(); renderIdeas();
+  store.watchResponses((list) => { responses = list; renderGroup(); if (!$("#meForm") || !document.activeElement?.closest?.("#meForm")) renderMe(); });
+  store.watchSuggestions((list) => { suggestions = list; renderIdeas(); });
+  showTab(ls.get("aspen_tab", "budget"));
+}
+
+(async function init() {
+  store = LIVE ? await makeFirebaseStore() : makeLocalStore();
+  if (!LIVE) {
+    $("#gateDemo").textContent = "Preview mode: Firebase isn't connected yet, so any password works and answers stay on this device.";
+    const b = $("#demoBanner"); b.classList.remove("hide"); b.textContent = "Preview mode. Answers are only saved in this browser until Firebase is connected.";
+  }
+  $("#gateForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); $("#gateErr").textContent = "";
+    try { await store.signIn($("#gatePw").value); } catch { $("#gateErr").textContent = "That password didn't work."; }
+  });
+  store.onAuth((u) => {
+    user = u;
+    $("#gate").classList.toggle("hide", !!u); $("#app").classList.toggle("hide", !u);
+    if (u) startApp();
+  });
+})();
+</script>
+</body>
+</html>
