@@ -311,6 +311,9 @@ const SKI = {
   fullInfo: "Ski from 9 AM until the lifts close around 3:30 PM. One ticket covers all four mountains: Snowmass, Aspen Mountain, Highlands and Buttermilk. It only works on the date you buy it for.",
   halfInfo: "Ski from 12 PM until the lifts close around 3:30 PM, on the same four mountains."
 };
+const PCC_THU_DINNER = 230;          // Pine Creek Cookhouse by ski or snowshoe: $175 plus tax and the 22% service charge
+let lastPccThu = false;              // what the Budget tab last showed for Thursday dinner
+const pccThu = () => !!me && (allPicks[me]?.["thu-din"] || []).includes("Pine Creek Cookhouse");
 const CLOUD9_THIS_YEAR = 1000;      // about $685 to book + about $300 there
 
 // Last year vs this year's options. Costs are per person. Last year's costs match the Budget tab.
@@ -490,6 +493,7 @@ let ski = ls.get("aspen_ski2", { ...SKI_NONE }), skiDocs = {}, skiSynced = false
 function renderBudget() {
   const save = () => { ls.set("aspen_ski2", ski); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => toast("Couldn't save your skiing choices. Try again.")); renderBudget(); renderMe(); };
   const anyDay = ski.on && (ski.fri || ski.sat);
+  lastPccThu = pccThu();
   const extra = (dayName) => {
     const k = Object.keys(SKI.days).find((x) => SKI.days[x].day === dayName), kind = k && ski.on && ski[k];
     if (!kind) return [];
@@ -501,6 +505,7 @@ function renderBudget() {
   const rowsFor = (d) => {
     let rows = [...extra(d.day), ...d.rows];
     if (c9 && d.day === "Friday") rows = rows.map((r) => r[0] === "Lunch on the mountain" ? ["Cloud 9 Lunch / Party", CLOUD9_THIS_YEAR] : r[0] === "Dinner out" ? ["Casual dinner in", 20, false, "A casual night in after Cloud Nine"] : r);
+    if (lastPccThu && d.day === "Thursday") rows = rows.map((r) => r[0] === "Dinner" ? ["Dinner at Pine Creek Cookhouse", PCC_THU_DINNER, false, "Your pick on the Plan tab. Cross-country ski in: $175 plus tax and a 22% service charge, before drinks"] : r);
     return rows;
   };
   const dayTotal = (d) => rowsFor(d).reduce((a, r) => a + r[1], 0);
@@ -557,7 +562,7 @@ const SLOT_IDS = PLAN.flatMap((d) => d.slots.map((s) => s.id));
 const anyOf = (p) => { const m = allPicks[p] || {}; return new Set(m._chris ? SLOT_IDS : (m._any || [])); };
 const allAny = (p) => { const a = anyOf(p); return SLOT_IDS.every((id) => a.has(id)); };
 function commitPicks(mine) {
-  delete mine._chris; allPicks = { ...allPicks, [me]: mine }; renderPlan(true);
+  delete mine._chris; allPicks = { ...allPicks, [me]: mine }; renderPlan(true); if (pccThu() !== lastPccThu) renderBudget();
   store.savePicks(me, mine).catch(() => toast("Couldn't save that. Try again."));
 }
 function togglePick(slotId, option) {
@@ -965,7 +970,7 @@ function startApp() {
     if (me && skiDocs[me]) { const next = skiFrom(skiDocs[me]); if (JSON.stringify(next) !== JSON.stringify(ski)) { ski = next; ls.set("aspen_ski2", ski); renderBudget(); }
       const d = skiDocs[me]; if ("c9" in d) { if (!!d.c9 !== c9) { c9 = !!d.c9; ls.set("aspen_c9", c9); renderBudget(); } } else if (c9 && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); } }
     else if (me && (ski.on || c9) && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
-    allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderReport(); if (!meDirty && (!$("#meForm") || !document.activeElement?.closest?.("#meForm"))) renderMe(); });
+    allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); if (pccThu() !== lastPccThu) renderBudget(); responses = list; renderReport(); if (!meDirty && (!$("#meForm") || !document.activeElement?.closest?.("#meForm"))) renderMe(); });
   store.watchSuggestions((list) => { suggestions = list; renderPlan(); renderReport(); });
   const lastTab = ls.get("aspen_seen_trip", false) ? ls.get("aspen_tab", "trip") : "trip"; ls.set("aspen_seen_trip", true);
   showTab($(`nav.tabs button[data-tab="${lastTab}"]`) ? lastTab : "trip");
