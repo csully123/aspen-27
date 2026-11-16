@@ -286,7 +286,7 @@ const BUDGET = [
   { day: "Friday", rows: [
     ["Lunch on the mountain", 40], ["Après drinks", 70], ["Dinner out", 100] ] },
   { day: "Saturday", rows: [
-    ["Breakfast", 25], ["Lunch on the mountain", 40], ["Drinks before dinner", 20], ["Splurge dinner", 225], ["Going out", 50] ] },
+    ["Breakfast", 25], ["Lunch on the mountain", 40], ["Drinks before dinner", 20], ["Dinner out", 225], ["Going out", 50] ] },
   { day: "Sunday", rows: [ ["Brunch", 40] ] },
   { day: "Whole trip", rows: [ ["Tips for the house staff", 50], ["Ubers and rides", 20, false, "Timbers Club mostly has shuttles we can use for free"] ] }
 ];
@@ -596,7 +596,7 @@ function startSnow() {
 
 /* ---------- my answers tab ---------- */
 const Q = {
-  splurge: { q: "Are you good with one splurge dinner?", hint: "Saturday night, about $200 a person. Last year was about $225 a person.", opts: ["Yes", "No"] },
+  splurge: { q: "Are you good with a splurge dinner?", hint: "Either Friday or Saturday, depending on other plans. About $200 a person. Last year was about $225 a person.", opts: ["Yes", "No"] },
   cloud9: { q: "Do you want to do Cloud Nine on Friday?", hint: "About $1,000 a person. Friday is the only day that works and we have to decide soon.", opts: ["Yes", "No", "Only if everyone's in"] },
   sushi: { q: "Would you be ok with sushi being one of our dinners?", opts: ["Yes", "No", "Fine, I'll order cooked dishes"] }
 };
