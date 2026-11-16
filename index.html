@@ -183,16 +183,12 @@
   .idea { font-size: .9rem; padding: 6px 0; border-top: 1px dashed var(--line); }
   .ideaform { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; } .ideaform input { flex: 1 1 220px; }
   button.btn.sm { padding: 8px 14px; font-size: .9rem; }
-  .ideabox button.btn.ghost, .pickmore button.btn.ghost { background: #ffffff; color: #1b5f9e; border: 2px solid #2476bd; box-shadow: 0 3px 0 #2476bd55; }
-  .ideabox button.btn.ghost:hover, .pickmore button.btn.ghost:hover { background: #eaf3fb; }
+  .ideabox button.btn.ghost { background: #ffffff; color: #1b5f9e; border: 2px solid #2476bd; box-shadow: 0 3px 0 #2476bd55; }
+  .ideabox button.btn.ghost:hover { background: #eaf3fb; }
   .ideabtns { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pickmore { margin: -2px 0 10px; padding: 8px 0 4px 12px; border-left: 3px solid var(--accent); }
-  .pickmore summary { cursor: pointer; font-weight: 700; color: var(--accent); font-size: .92rem; }
-  .pickmore ul { margin: 8px 0 0; padding-left: 18px; } .pickmore li { margin-bottom: 6px; font-size: .9rem; }
-  .waybox { margin-bottom: 10px; } .waybox .colhead { margin-bottom: 6px; } .waybox p { margin: 8px 0 0; }
   ul.c9list { margin: 0 0 12px; padding-left: 22px; } ul.c9list li { margin: 6px 0; }
-  .ideabox button.btn.ghost.on, .pickmore button.btn.ghost.on { background: #2476bd; color: #ffffff; border-color: #2476bd; }
-  .ideabox button.btn.ghost.on:hover, .pickmore button.btn.ghost.on:hover { background: #1f68a8; }
+  .ideabox button.btn.ghost.on { background: #2476bd; color: #ffffff; border-color: #2476bd; }
+  .ideabox button.btn.ghost.on:hover { background: #1f68a8; }
   .pick.taken { opacity: .6; border: 1px dashed var(--line); }
   .lede { font-size: 1.06rem; line-height: 1.6; margin: 8px 0 0; }
   a.abtn { display: inline-block; background: var(--accent); color: var(--accent-ink); border-radius: 999px; font-weight: 800; padding: 11px 18px; text-decoration: none;
@@ -318,18 +314,6 @@ const SKI = {
 const CLOUD9_THIS_YEAR = 1000;      // about $685 to book + about $300 there
 
 // Last year vs this year's options. Costs are per person. Last year's costs match the Budget tab.
-const PCC = "Pine Creek Cookhouse";
-const PCC_WAYS = [{ k: "sleigh", label: "Horse-drawn sleigh", cost: "$205", chip: "sleigh" }, { k: "ski", label: "Ski or snowshoe", cost: "$175", chip: "ski or snowshoe" }];
-const PCC_DESC = "A log cabin restaurant in the mountains past Aspen that you can only reach by horse-drawn sleigh, cross-country skis or snowshoes. Four-course dinner by the fire. Tap it, then tell me how you'd want to get there.";
-const PCC_MORE = [
-  ["Getting there", "We'd take a van from Timbers to the King Cabin, the check-in spot at the trailhead, about 45 minutes away. Everyone checks in there at 6:00 PM, whichever way you're going up. The restaurant is a mile and a half further in."],
-  ["Horse-drawn sleigh", "About 20 minutes each way. $205 a person, about $266 with tax and the 22% service charge. Normal warm clothes are fine."],
-  ["Ski or snowshoe", "A guided mile and a half, about 45 minutes, with 300 feet of gentle climbing. Gear and a headlamp are included, and you choose skis or snowshoes when we get there. $175 a person, about $227 with tax and service."],
-  ["Dinner", "Four courses by the fire. Drinks are extra. The plan is one table for all 7 of us, however you get there. The sleigh gets in first, so that group waits at the bar."],
-  ["Getting back", "You go back down the same way you came up. I'd guess we're back at the van around 9:30 to 9:45 PM. I'm confirming that with the restaurant."],
-  ["Going out after", "We could still go out in Aspen, getting to town around 10:15 PM. If you ski or snowshoe, leave a change of clothes in the van."],
-  ["No cell service", "There's none up there, so the ride home gets booked ahead of time."],
-  ["Cancelling", "Nothing is paid up front and we can cancel until 24 hours before. After that, anyone who drops out still gets charged."] ];
 const PLAN = [
   { day: "Thursday, Jan 21", slots: [
     { id: "thu-hh", label: "Happy hour", last: { name: "Clark's Oyster Bar", cost: "~$60", note: "Half-price martinis and oysters." }, picks: [
@@ -348,7 +332,7 @@ const PLAN = [
         res: "Books on OpenTable for up to 20. Jan 21 should open in early December." },
       { name: "Campo de Fiori", cost: "about $100 to $130", desc: "Loud, social Italian trattoria with pastas at $31 to $34. Open until 10:30.", res: "Books on OpenTable for up to 20." },
       { name: "Brunelleschi's", cost: "about $50 to $85", desc: "The cheapest option. Pizza and pasta with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." },
-      { name: PCC, cost: "about $230 to $270", desc: PCC_DESC + " Thursday is arrival day, so this only works if everyone lands by about 3:00 PM.", more: PCC_MORE, ways: PCC_WAYS, res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] }
+      { name: "Pine Creek Cookhouse", cost: "about $230 before drinks", desc: "A log cabin restaurant in the mountains past Aspen that you can only reach on cross-country skis, snowshoes or a horse-drawn sleigh. The ski in is a mile and a half, about 45 minutes, with a guide, and the gear and headlamp are included. Then a four-course dinner by the fire. $175 a person plus tax and a 22% service charge. The sleigh is $30 more. We'd need to be there by 6:00 PM, about 45 minutes from Timbers. Thursday is arrival day, so this only works if everyone lands by about 3:00 PM. Anyone who misses it still gets charged.", res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] }
   ] },
   { day: "Friday, Jan 22", slots: [
     { id: "fri-lunch", label: "Lunch", last: { name: "Cloud Nine", cost: "~$540", note: "Chris had a plug that is no longer available, and prices have increased this year." }, picks: [
@@ -369,7 +353,7 @@ const PLAN = [
       { name: "Campo de Fiori", cost: "about $100 to $130", desc: "Loud, social Italian trattoria in Aspen with pastas at $31 to $34. Open until 10:30.", res: "Books on OpenTable for up to 20." },
       { name: "J-Bar at Hotel Jerome", cost: "about $120", desc: "Burgers and a classic western bar that's been an Aspen hangout forever. Walk-in only, so there may be a wait for 7.", res: "Walk in only." },
       { name: "Brunelleschi's", cost: "about $50 to $85", desc: "The cheapest dinner out. Pizza and pasta in Aspen with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." },
-      { name: PCC, cost: "about $230 to $270", desc: PCC_DESC + " Friday is their Full Moon night, with live music, a bonfire and drink specials. Would only work if we skip Cloud 9.", more: PCC_MORE, ways: PCC_WAYS, res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] }
+      { name: "Pine Creek Cookhouse", cost: "about $230 before drinks", desc: "A log cabin restaurant in the mountains past Aspen that you can only reach on cross-country skis, snowshoes or a horse-drawn sleigh. The ski in is a mile and a half, about 45 minutes, with a guide, and the gear and headlamp are included. Then a four-course dinner by the fire. $175 a person plus tax and a 22% service charge. The sleigh is $30 more. We'd need to be there by 6:00 PM, about 45 minutes from Timbers. Friday is their Full Moon night, with live music, a bonfire and drink specials. Would only work if we skip Cloud 9.", res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
     { id: "sat-bfast", label: "Breakfast", last: { name: "Daly Diner", cost: "~$25", note: "Diner breakfast in Snowmass before skiing." }, picks: [
@@ -390,7 +374,7 @@ const PLAN = [
       { name: "Matsuhisa", cost: "about $175 to $250", desc: "Nobu Matsuhisa's Aspen restaurant and the big-name option. Shared plates at $26 to $39 each. Closes at 9.", res: "Downstairs room opens Dec 24 (30 days out), by phone for 7." },
       { name: "Betula", cost: "about $150 to $200", desc: "French and South American menu with a sunset view and a DJ that runs until midnight.", res: "By email. Reopens for winter Nov 26." },
       { name: "Caribou Club", cost: "about $225", desc: "Seafood towers, caviar and club plates, and the DJ starts at 10 so we wouldn't need to go anywhere after.", res: "By arrangement, same as last year." },
-      { name: PCC, cost: "about $230 to $270", desc: PCC_DESC + " This is the night that works if we do Cloud 9 on Friday.", more: PCC_MORE, ways: PCC_WAYS, res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] },
+      { name: "Pine Creek Cookhouse", cost: "about $230 before drinks", desc: "A log cabin restaurant in the mountains past Aspen that you can only reach on cross-country skis, snowshoes or a horse-drawn sleigh. The ski in is a mile and a half, about 45 minutes, with a guide, and the gear and headlamp are included. Then a four-course dinner by the fire. $175 a person plus tax and a 22% service charge. The sleigh is $30 more. We'd need to be there by 6:00 PM, about 45 minutes from Timbers. We'd be in ski clothes, so going out after would mean changing first.", res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] },
     { id: "sat-out", label: "Night out", last: { name: "Stayed at Caribou Club", cost: "~$50", note: "Dance floor picked up around 11." }, picks: [
       { name: "Caribou Club", cost: "about $50", desc: "Members club with a DJ from 10 PM, and the dance floor picks up around 11.", res: "By arrangement, same as last year." },
       { name: "Escobar or Sterling", cost: "about $50", desc: "The two DJ clubs.", res: "Walk in." },
@@ -567,7 +551,6 @@ function renderBudget() {
 
 /* ---------- plan tab ---------- */
 let allPicks = {}, openIdea = "", ideaDraft = "", planDirty = false;
-const moreOpen = new Set();   // which "how the night would work" boxes are open
 const DINNERS = { "thu-din": "Thursday dinner", "fri-din": "Friday dinner", "sat-din": "Saturday dinner" };
 const SLOT_IDS = PLAN.flatMap((d) => d.slots.map((s) => s.id));
 // slots where a person said "I'm good with anything" (the Chris button at the top sets every slot)
@@ -582,15 +565,9 @@ function togglePick(slotId, option) {
   const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[slotId] || []), any = anyOf(me);
   if (slotId === C9_SLOT && option === C9_PICK) { setCloudNine(cur.has(option) ? "No" : "Yes"); return; }
   cur.has(option) ? cur.delete(option) : cur.add(option);
-  if (option === PCC && cur.has(option)) moreOpen.add(slotId);
   mine[slotId] = [...cur];
   if (cur.size && !(slotId === C9_SLOT && cur.size === 1 && cur.has(C9_PICK))) any.delete(slotId);   // picking a place replaces "good with anything" for that section
   mine._any = [...any]; commitPicks(mine);
-}
-function setWay(k) {   // sleigh or ski, for Pine Creek Cookhouse
-  if (!me) { toast("Pick your name at the top first."); return; }
-  const mine = { ...(allPicks[me] || {}) }, any = anyOf(me);
-  mine._way = mine._way === k ? "" : k; mine._any = [...any]; commitPicks(mine);
 }
 function toggleAny(slotId) {
   if (!me) { toast("Pick your name at the top first."); return; }
@@ -644,20 +621,10 @@ function renderPlan(force) {
               h("span", { class: "head" }, h("span", {}, h("span", { class: "name" }, p.name), p.cost && h("span", { class: "cost" }, p.cost))),
               h("span", { class: "blk small" }, "You picked this for " + DINNERS[night] + ". Remove that pick to choose it here."),
               h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + "'s Pick"))));
-            const wayOf = (n) => (p.ways || []).find((w) => w.k === allPicks[n]?._way), myWay = wayOf(me)?.k;
-            const btn = h("button", { type: "button", class: "pick" + (mine ? " mine" : ""), "aria-pressed": mine ? "true" : "false", onclick: () => togglePick(s.id, p.name) },
+            return h("button", { type: "button", class: "pick" + (mine ? " mine" : ""), "aria-pressed": mine ? "true" : "false", onclick: () => togglePick(s.id, p.name) },
               h("span", { class: "head" }, h("span", {}, h("span", { class: "name" }, p.name), p.cost && h("span", { class: "cost" }, p.cost))),
               h("span", { class: "blk small" }, p.desc),
-              who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + "'s Pick" + (wayOf(n) ? ": " + wayOf(n).chip : "")))));
-            if (!p.more) return btn;
-            return [btn, h("div", { class: "pickmore" },
-              mine ? h("div", { class: "waybox" },
-                h("div", { class: "colhead" }, "How do you want to get there?"),
-                h("div", { class: "ideabtns" }, p.ways.map((w) => h("button", { type: "button", class: "btn ghost sm" + (myWay === w.k ? " on" : ""), "aria-pressed": myWay === w.k ? "true" : "false", onclick: () => setWay(w.k) }, (myWay === w.k ? "✓ " : "") + w.label + " · " + w.cost))),
-                h("p", { class: "small muted" }, myWay ? "Saved. Tap the other one to switch." : "Tap one so I know how many sleigh seats and how many skis to book.")) : null,
-              h("details", { open: moreOpen.has(s.id), ontoggle: (e) => { e.currentTarget.open ? moreOpen.add(s.id) : moreOpen.delete(s.id); } },
-                h("summary", {}, "How the night would work"),
-                h("ul", {}, p.more.map(([b, x]) => h("li", {}, h("b", {}, b + ". "), x)))))]; }),
+              who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + "'s Pick")))); }),
           ideaBox(s)))))),
     ...(other.length > 0 ? [h("div", { class: "card" }, h("h2", {}, "Other ideas"), other.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text)))] : [])
   );
@@ -813,9 +780,6 @@ function reportSections() {
     const anyWho = PEOPLE.filter((p) => anyOf(p).has(s.id));
     if (anyWho.length) picks.push(`${d.day.split(",")[0]} ${s.label.toLowerCase()}: good with anything (${anyWho.length}): ${anyWho.join(", ")}`);
   }
-  const pccWho = PEOPLE.filter((p) => Object.keys(DINNERS).some((id) => (allPicks[p]?.[id] || []).includes(PCC)));
-  if (pccWho.length) picks.push("Pine Creek Cookhouse, getting there: " + [...PCC_WAYS.map((w) => [w.chip, pccWho.filter((p) => allPicks[p]?._way === w.k)]), ["not chosen yet", pccWho.filter((p) => !PCC_WAYS.some((w) => w.k === allPicks[p]?._way))]]
-    .filter(([, who]) => who.length).map(([label, who]) => `${label} (${who.length}): ${who.join(", ")}`).join("; "));
   const slotName = (id) => { for (const d of PLAN) for (const s of d.slots) if (s.id === id) return `${d.day.split(",")[0]} ${s.label.toLowerCase()}`; return "General"; };
   const ideas = [...suggestions].reverse().map((x) => `${slotName(x.slot)}: ${x.name}: ${x.text}`);
   const legs = (which) => responses.filter((r) => r[which] && (r[which].flight || r[which].airport)).sort((x, y) => (x[which].date || "").localeCompare(y[which].date || ""))
