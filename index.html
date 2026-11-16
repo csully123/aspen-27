@@ -179,6 +179,24 @@
   .ideabox button.btn.ghost { background: #ffffff; color: #1b5f9e; border: 2px solid #2476bd; box-shadow: 0 3px 0 #2476bd55; }
   .ideabox button.btn.ghost:hover { background: #eaf3fb; }
   .pick.taken { opacity: .6; border: 1px dashed var(--line); }
+  .lede { font-size: 1.06rem; line-height: 1.6; margin: 8px 0 0; }
+  a.abtn { display: inline-block; background: var(--accent); color: var(--accent-ink); border-radius: 999px; font-weight: 800; padding: 11px 18px; text-decoration: none;
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 35%, transparent); }
+  a.abtn:hover { filter: brightness(1.06); }
+  a.tlink { color: var(--accent); font-weight: 700; }
+  .flightbox { background: var(--soft); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 12px 0 16px; }
+  .leg { border-top: 1px solid var(--line); padding: 10px 0; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .leg:first-of-type { border-top: 0; }
+  .leg .day { font-weight: 800; } .leg .price { font-weight: 800; color: var(--accent); white-space: nowrap; }
+  .who2 { display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--gold-ink); background: var(--gold); border-radius: 999px; padding: 2px 9px; }
+  table.flights tr.theirs td { background: var(--soft); }
+  table.flights td { padding: 9px 6px; }
+  .trip h3 { margin: 16px 0 6px; }
+  .trip ul { margin: 6px 0 0; padding-left: 20px; } .trip li { margin: 7px 0; }
+  .addr { font-weight: 700; font-size: 1.05rem; }
+  .itin { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line); padding: 12px 0; }
+  .itin .d { font-weight: 800; }
+  .tbd { display: inline-block; font-size: .74rem; font-weight: 800; letter-spacing: .08em; color: var(--muted); border: 1px dashed var(--muted); border-radius: 999px; padding: 3px 12px; }
 </style>
 </head>
 <body>
@@ -208,13 +226,15 @@
     <button class="herohint" type="button">Tap the mountain</button>
   </header>
   <nav class="tabs"><div class="wrap" role="tablist">
-    <button data-tab="budget" aria-selected="true">Budget</button>
+    <button data-tab="trip" aria-selected="true">The Trip</button>
+    <button data-tab="budget">Budget</button>
     <button data-tab="plan">Plan</button>
     <button data-tab="me">My answers</button>
   </div></nav>
   <main><div class="wrap">
     <div class="banner hide" id="demoBanner"></div>
-    <section class="tab on" id="tab-budget"></section>
+    <section class="tab on" id="tab-trip"></section>
+    <section class="tab" id="tab-budget"></section>
     <section class="tab" id="tab-plan"></section>
     <section class="tab" id="tab-me"></section>
     <section class="tab" id="tab-report"></section>
@@ -725,6 +745,89 @@ function renderOrgFoot() {
   $("#orgFoot").replaceChildren(h("p", { class: "small muted", style: "text-align:center;margin-top:24px" }, h("button", { class: "link", style: "font-weight:400;color:inherit", onclick: () => f.classList.toggle("hide") }, "Organizer sign in")), f);
 }
 
+/* ---------- the trip (first tab) ---------- */
+const TRIP = {
+  checked: "Nov 15",
+  united: "https://www.united.com/en/us/fsr/choose-flights?f=ORD&t=ASE&d=2027-01-21&r=2027-01-24&sc=7,7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=R",
+  allOut: "https://www.google.com/travel/flights?q=one%20way%20flights%20from%20ORD%20to%20ASE%20on%202027-01-21",
+  allBack: "https://www.google.com/travel/flights?q=one%20way%20flights%20from%20ASE%20to%20ORD%20on%202027-01-24",
+  map: "https://www.google.com/maps/search/?api=1&query=Timbers+Club+65+Timbers+Club+Ct+Snowmass+Village+CO+81615",
+  booked: [
+    { day: "Thursday, Jan 21", flight: "United UA 6033", route: "Chicago O'Hare 9:15 AM to Aspen 11:53 AM", detail: "Nonstop, 3 hr 38 min", price: 298 },
+    { day: "Sunday, Jan 24", flight: "United UA 5468", route: "Aspen 4:20 PM to Chicago O'Hare 8:23 PM", detail: "Nonstop, 3 hr 3 min", price: 390 }
+  ],
+  // [leaves, lands, airline, stops, one-way price, Ali and Dan's flight]
+  out: [ ["7:00 AM", "10:50 AM", "United", "1 stop in Denver", 308], ["9:15 AM", "11:53 AM", "United", "Nonstop", 298, true], ["9:40 AM", "12:37 PM", "American", "Nonstop", 298],
+    ["11:45 AM", "2:40 PM", "American", "Nonstop", 298], ["12:55 PM", "3:26 PM", "United", "Nonstop", 298], ["4:15 PM", "6:46 PM", "United", "Nonstop", 298] ],
+  back: [ ["7:50 AM", "11:58 AM", "United", "Nonstop", 535], ["1:02 PM", "5:05 PM", "United", "Nonstop", 535], ["1:07 PM", "5:22 PM", "American", "Nonstop", 374],
+    ["3:32 PM", "7:49 PM", "American", "Nonstop", 298], ["4:20 PM", "8:23 PM", "United", "Nonstop", 390, true], ["4:44 PM", "11:20 PM", "American", "1 stop", 308], ["6:25 PM", "11:58 PM", "United", "1 stop in Denver", 308] ],
+  days: ["Thursday, Jan 21", "Friday, Jan 22", "Saturday, Jan 23", "Sunday, Jan 24"]
+};
+function renderTrip() {
+  const ext = (href, cls, text) => h("a", { href, target: "_blank", rel: "noopener", class: cls }, text);
+  const flights = (rows) => h("div", { class: "scroll" }, h("table", { class: "flights" },
+    h("thead", {}, h("tr", {}, h("th", {}, "Leaves"), h("th", {}, "Lands"), h("th", {}, "Airline"), h("th", { class: "num" }, "One way"))),
+    h("tbody", {}, rows.map(([dep, arr, air, stops, price, theirs]) => h("tr", { class: theirs ? "theirs" : null },
+      h("td", {}, dep), h("td", {}, arr),
+      h("td", {}, air, h("div", { class: "small muted" }, stops), theirs ? h("div", {}, h("span", { class: "who2" }, "Ali and Dan")) : null),
+      h("td", { class: "num" }, money0(price)))))));
+  $("#tab-trip").replaceChildren(
+    h("div", { class: "card trip" },
+      h("h2", {}, "We're running it back"),
+      h("p", { class: "lede" }, "Same house, more people, colder month. Seven of us take over Timbers Club in Snowmass from Thursday, January 21 to Sunday, January 24 for skiing, hot tubs, game nights and at least one dinner none of us should be paying for. Better yet, it's Gay Ski Week in Aspen, and not just any year: it's the 50th anniversary. That means a downhill costume contest on Friday, a dance party on top of the mountain, and a town in the best mood it's been in all winter. Translation: it should be a phenomenal time. Aspen hat still mandatory.")),
+
+    h("div", { class: "card trip" },
+      h("h2", {}, "Flights"),
+      h("p", { class: "muted", style: "margin:4px 0 0" }, "Ali and Dan are already booked out of Chicago. Join them if you can, or grab one of the other flights below."),
+      h("div", { class: "flightbox" },
+        h("h3", { style: "margin:0 0 4px" }, "Ali and Dan's flights"),
+        TRIP.booked.map((f) => h("div", { class: "leg" },
+          h("div", {}, h("div", { class: "day" }, f.day), h("div", {}, f.flight + ": " + f.route), h("div", { class: "small muted" }, f.detail)),
+          h("div", { class: "price" }, money0(f.price)))),
+        h("p", { style: "margin:12px 0 6px" }, ext(TRIP.united, "abtn", "See these flights on United")),
+        h("div", { class: "small muted" }, "The link opens United's Chicago to Aspen search for our dates. Pick the 9:15 AM out and the 4:20 PM back to be on their planes.")),
+      h("h3", {}, "Thursday, Jan 21: Chicago O'Hare to Aspen"),
+      flights(TRIP.out),
+      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allOut, "tlink", "See all Thursday flights")),
+      h("h3", {}, "Sunday, Jan 24: Aspen to Chicago O'Hare"),
+      flights(TRIP.back),
+      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allBack, "tlink", "See all Sunday flights")),
+      h("p", { class: "small muted", style: "margin:14px 0 0" }, `Prices are one way, per person, in economy, as of ${TRIP.checked}. They will move, so check before you book. Times are local to each airport.`),
+      h("p", { style: "margin:14px 0 0" }, "Once you book, add your flight on the ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), " tab so Timbers knows when to pick you up.")),
+
+    h("div", { class: "card trip" },
+      h("h2", {}, "Where we're staying"),
+      h("p", { class: "addr", style: "margin:8px 0 2px" }, "Timbers Club, Unit #422"),
+      h("div", {}, "65 Timbers Club Ct, Snowmass Village, Colorado 81615"),
+      h("p", { class: "small", style: "margin:6px 0 0" }, ext(TRIP.map, "tlink", "Open in Google Maps")),
+      h("h3", {}, "What Timbers Club gives us"),
+      h("ul", {},
+        h("li", {}, h("b", {}, "Free breakfast every morning, 6:30 to 9:30 AM. "), "Breakfast breads and pastries, yogurt, hard-boiled eggs, whole fruit, and a coffee bar with a barista."),
+        h("li", {}, h("b", {}, "Free après-ski happy hour every day, 3:30 to 4:30 PM. "), "Beer, wine and appetizers on the house."),
+        h("li", {}, h("b", {}, "Airport pickup. "), "They meet us at the Aspen airport and drive us to the house."),
+        h("li", {}, h("b", {}, "Shuttles. "), "Timbers mostly has shuttles we can use for free to get around."),
+        h("li", {}, h("b", {}, "Ski rentals downstairs. "), "If you're renting, your gear gets picked up right in the building.")),
+      h("h3", {}, "Finding your ride at the airport"),
+      h("p", { style: "margin:0" }, "Grab your bags and walk out of the airport at baggage claim. Look to the right and you'll see a line of black Suburbans and Sprinter vans. Find the one with the Timbers Club name and logo on it (it could be either kind of car) and tell them your name."),
+      h("details", { style: "margin-top:16px" },
+        h("summary", { style: "cursor:pointer;font-weight:800" }, "What to pack"),
+        h("ul", {},
+          h("li", {}, "Ski clothes and gear. If you're renting, you only need ski clothes and goggles. They provide skis, boots and helmets."),
+          h("li", {}, "It's January, so pack warmer than you think: base layers, a neck warmer and good gloves."),
+          h("li", {}, "If we do Cloud Nine, wear ski clothes you don't mind getting doused in champagne. They hand out plastic bags for jackets, but anything outside the bag gets wet."),
+          h("li", {}, "Casual going-out clothes for drinks and dinner on Thursday, and for walking around town on Sunday."),
+          h("li", {}, "Something nicer for dinner on Saturday."),
+          h("li", {}, "Lounging clothes for hanging at the house."),
+          h("li", {}, "Bathing suit and flip flops."),
+          h("li", {}, "An Aspen hat. Mandatory if you have one.")))),
+
+    h("div", { class: "card trip" },
+      h("h2", {}, "Itinerary"),
+      h("p", { class: "muted", style: "margin:4px 0 10px" }, "Still taking shape. Cast your votes on the ", h("button", { class: "link", type: "button", onclick: () => showTab("plan") }, "Plan"), " tab and this fills in once we lock things."),
+      TRIP.days.map((d) => h("div", { class: "itin" }, h("span", { class: "d" }, d), h("span", { class: "tbd" }, "TBD"))))
+  );
+}
+
 /* ---------- shell ---------- */
 function showTab(name) {
   document.querySelectorAll("nav.tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === name));
@@ -742,7 +845,7 @@ function startApp() {
   if (user?.organizer) $("nav.tabs .wrap").append(h("button", { "data-tab": "report", "aria-selected": "false" }, "Report"));
   document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
   renderOrgFoot();
-  renderBudget(); renderPlan(true); renderMe(); renderReport();
+  renderTrip(); renderBudget(); renderPlan(true); renderMe(); renderReport();
   $("#hero").addEventListener("click", (e) => { if (!e.target.closest("select")) skiRun(); });
   startSnow();
   store.watchResponses((all) => { const list = all.filter((d) => !d.type);
@@ -752,7 +855,8 @@ function startApp() {
     else if (me && (ski.on || c9) && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
     allPicks = Object.fromEntries(all.filter((d) => d.type === "picks").map((d) => [d.name, d.picks || {}])); renderPlan(); responses = list; renderReport(); if (!meDirty && (!$("#meForm") || !document.activeElement?.closest?.("#meForm"))) renderMe(); });
   store.watchSuggestions((list) => { suggestions = list; renderPlan(); renderReport(); });
-  const lastTab = ls.get("aspen_tab", "budget"); showTab($(`nav.tabs button[data-tab="${lastTab}"]`) ? lastTab : "budget");
+  const lastTab = ls.get("aspen_seen_trip", false) ? ls.get("aspen_tab", "trip") : "trip"; ls.set("aspen_seen_trip", true);
+  showTab($(`nav.tabs button[data-tab="${lastTab}"]`) ? lastTab : "trip");
 }
 
 (async function init() {
