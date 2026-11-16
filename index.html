@@ -198,7 +198,11 @@
   .flag.tight { color: #7a5600; background: #fbeec6; } .flag.late { color: #9b2226; background: #fbdcdc; }
   @media (prefers-color-scheme: dark) { .flag.tight { color: #f1cf73; background: #3d3211; } .flag.late { color: #f5a3a3; background: #45191b; } }
   .trip h3 { margin: 16px 0 6px; }
-  .trip ul { margin: 6px 0 0; padding-left: 20px; } .trip li { margin: 7px 0; }
+  .trip ul, .trip ol { margin: 6px 0 0; padding-left: 22px; } .trip li { margin: 7px 0; }
+  .trip .lede + .lede { margin-top: 12px; }
+  figure.logo { margin: 12px 0 0; }
+  figure.logo img { display: block; width: 100%; max-width: 280px; height: auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+  figure.logo figcaption { margin-top: 6px; }
   .addr { font-weight: 700; font-size: 1.05rem; }
   .itin { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line); padding: 12px 0; }
   .itin .d { font-weight: 800; }
@@ -798,7 +802,38 @@ function renderTrip() {
   $("#tab-trip").replaceChildren(
     h("div", { class: "card trip" },
       h("h2", {}, "We're running it back"),
-      h("p", { class: "lede" }, "Same house, more people, colder month. Seven of us take over Timbers Club in Snowmass from Thursday, January 21 to Sunday, January 24 for skiing, hot tubs, game nights and at least one dinner none of us should be paying for. Better yet, it's Gay Ski Week in Aspen, and not just any year: it's the 50th anniversary. That means a downhill costume contest on Friday, a dance party on top of the mountain, and a town in the best mood it's been in all winter. Translation: it should be a phenomenal time. Aspen hat still mandatory.")),
+      h("p", { class: "lede" }, "Same house, more people, colder month. Seven of us take over Timbers Club in Snowmass from Thursday, January 21 to Sunday, January 24 for skiing, hot tubs, game nights and at least one dinner none of us should be paying for. Better yet, it's Gay Ski Week in Aspen, and not just any year: it's the 50th anniversary. That means a downhill costume contest on Friday, a dance party on top of the mountain, and a town in the best mood it's been in all winter. Translation: it should be a phenomenal time."),
+      h("p", { class: "lede" }, "This site is the whole plan in one place. ", h("b", {}, "The Trip"), " (this page) covers the house, flights and the schedule. ", h("b", {}, "Budget"), " shows roughly what the weekend will cost you. ", h("b", {}, "Plan"), " is where we vote on every meal and night out. ", h("b", {}, "My answers"), " is the short list of things I need from each of you."),
+      h("h3", {}, "What I need you to do"),
+      h("ol", {},
+        h("li", {}, "Pick your name at the top of the page."),
+        h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("budget") }, "Budget"), ", tap whether you're skiing and whether you're in on Cloud Nine to see your number."),
+        h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("plan") }, "Plan"), ", tap your picks for each meal and night out, or post a different idea."),
+        h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), ", answer the questions and add your flight once you book. If you're renting gear, the rental details go there too."))),
+
+    h("div", { class: "card trip" },
+      h("h2", {}, "Where we're staying"),
+      h("p", { class: "addr", style: "margin:8px 0 2px" }, "Timbers Club, Unit #422"),
+      h("div", {}, "65 Timbers Club Ct, Snowmass Village, Colorado 81615"),
+      h("p", { class: "small", style: "margin:6px 0 0" }, ext(TRIP.map, "tlink", "Open in Google Maps")),
+      h("ul", { style: "margin-top:12px" },
+        h("li", {}, h("b", {}, "Free breakfast every morning, 6:30 to 9:30 AM. "), "Breakfast breads and pastries, yogurt, hard-boiled eggs, whole fruit, and a coffee bar with a barista."),
+        h("li", {}, h("b", {}, "Free après-ski happy hour every day, 3:30 to 4:30 PM. "), "Beer, wine and appetizers."),
+        h("li", {}, h("b", {}, "Airport pickup. "), "They meet us at the Aspen airport and drive us to the house."),
+        h("li", {}, h("b", {}, "Shuttles. "), "Timbers mostly has shuttles we can use for free to get around."),
+        h("li", {}, h("b", {}, "Ski-in, ski-out on Snowmass Mountain. "), "If you're renting, you get fitted, store and leave your gear right in the building.")),
+      h("h3", {}, "Finding your ride at the airport"),
+      h("p", { style: "margin:0" }, "Grab your bags and walk out of the airport at baggage claim. Look to the right and you'll see a line of black Suburbans and Sprinter vans. Find the one with the Timbers Club name and logo on it (it could be either kind of car) and tell them your name."),
+      h("figure", { class: "logo" }, h("img", { src: "timbers-logo.png", alt: "The Timbers Club at Snowmass logo: a brown brushstroke mountain above the club's name", width: 360, height: 140 }), h("figcaption", { class: "small muted" }, "This is the logo on the side of the car.")),
+      h("details", { style: "margin-top:16px" },
+        h("summary", { style: "cursor:pointer;font-weight:800" }, "What to pack"),
+        h("ul", {},
+          h("li", {}, "Ski clothes and gear. If you're renting, you only need ski clothes and goggles. They provide skis, boots and helmets."),
+          h("li", {}, "Casual going-out clothes for drinks and dinner on Thursday, and for walking around town on Sunday."),
+          h("li", {}, "Going-out-on-the-town clothes for at least one night of Friday and Saturday, maybe both."),
+          h("li", {}, "Lounging clothes for hanging at the house."),
+          h("li", {}, "Bathing suit and flip flops."),
+          h("li", {}, "If we do Cloud Nine, wear ski clothes you don't mind getting doused in champagne. They hand out plastic bags for jackets, but anything outside the bag gets wet.")))),
 
     h("div", { class: "card trip" },
       h("h2", {}, "Flight Options"),
@@ -819,32 +854,6 @@ function renderTrip() {
       h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allBack, "tlink", "Compare all Sunday flights on Google Flights")),
       h("p", { class: "small muted", style: "margin:14px 0 0" }, "Prices are one way, per person, in economy. Times are local to each airport. Each link opens that airline's search for our date, so pick the matching departure time."),
       h("p", { style: "margin:14px 0 0" }, "Once you book, add your flight on the ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), " tab so Timbers knows when to pick you up.")),
-
-    h("div", { class: "card trip" },
-      h("h2", {}, "Where we're staying"),
-      h("p", { class: "addr", style: "margin:8px 0 2px" }, "Timbers Club, Unit #422"),
-      h("div", {}, "65 Timbers Club Ct, Snowmass Village, Colorado 81615"),
-      h("p", { class: "small", style: "margin:6px 0 0" }, ext(TRIP.map, "tlink", "Open in Google Maps")),
-      h("h3", {}, "What Timbers Club gives us"),
-      h("ul", {},
-        h("li", {}, h("b", {}, "Free breakfast every morning, 6:30 to 9:30 AM. "), "Breakfast breads and pastries, yogurt, hard-boiled eggs, whole fruit, and a coffee bar with a barista."),
-        h("li", {}, h("b", {}, "Free après-ski happy hour every day, 3:30 to 4:30 PM. "), "Beer, wine and appetizers on the house."),
-        h("li", {}, h("b", {}, "Airport pickup. "), "They meet us at the Aspen airport and drive us to the house."),
-        h("li", {}, h("b", {}, "Shuttles. "), "Timbers mostly has shuttles we can use for free to get around."),
-        h("li", {}, h("b", {}, "Ski rentals downstairs. "), "If you're renting, your gear gets picked up right in the building.")),
-      h("h3", {}, "Finding your ride at the airport"),
-      h("p", { style: "margin:0" }, "Grab your bags and walk out of the airport at baggage claim. Look to the right and you'll see a line of black Suburbans and Sprinter vans. Find the one with the Timbers Club name and logo on it (it could be either kind of car) and tell them your name."),
-      h("details", { style: "margin-top:16px" },
-        h("summary", { style: "cursor:pointer;font-weight:800" }, "What to pack"),
-        h("ul", {},
-          h("li", {}, "Ski clothes and gear. If you're renting, you only need ski clothes and goggles. They provide skis, boots and helmets."),
-          h("li", {}, "It's January, so pack warmer than you think: base layers, a neck warmer and good gloves."),
-          h("li", {}, "If we do Cloud Nine, wear ski clothes you don't mind getting doused in champagne. They hand out plastic bags for jackets, but anything outside the bag gets wet."),
-          h("li", {}, "Casual going-out clothes for drinks and dinner on Thursday, and for walking around town on Sunday."),
-          h("li", {}, "Something nicer for dinner on Saturday."),
-          h("li", {}, "Lounging clothes for hanging at the house."),
-          h("li", {}, "Bathing suit and flip flops."),
-          h("li", {}, "An Aspen hat. Mandatory if you have one.")))),
 
     h("div", { class: "card trip" },
       h("h2", {}, "Itinerary"),
