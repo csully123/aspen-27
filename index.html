@@ -456,6 +456,23 @@ let shut = ls.get("aspen_shut", {});
 let c9 = ls.get("aspen_c9", false), meDirty = false;
 const answered = (r) => !!r && ["splurge", "sushi", "arrive", "depart"].some((k) => k in r);
 function setC9(on) { c9 = on; ls.set("aspen_c9", c9); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
+const C9_SLOT = "fri-lunch", C9_PICK = "Cloud Nine";
+function setCloudNine(answer) {
+  const on = answer !== "No";
+  if (on !== c9) setC9(on);                                   // Budget button
+  if (me) {
+    voteC9(answer);                                           // My answers
+    const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[C9_SLOT] || []);
+    if (cur.has(C9_PICK) !== on) {                            // Plan pick
+      const any = anyOf(me);
+      if (on) cur.add(C9_PICK); else cur.delete(C9_PICK);
+      mine[C9_SLOT] = [...cur]; mine._any = [...any]; delete mine._chris;
+      allPicks = { ...allPicks, [me]: mine };
+      store.savePicks(me, mine).catch(() => toast("Couldn't save that. Try again."));
+    }
+  }
+  renderBudget(); renderPlan(true);
+}
 function voteC9(v) { if (!me) return; store.saveVote(me, { cloud9: v }).catch(() => {}); const el = [...document.querySelectorAll('#meForm input[name="cloud9"]')].find((x) => x.value === v); if (el) el.checked = true; }
 const SKI_NONE = { on: false, fri: "", sat: "", lift: false, rent: false };
 const skiFrom = (d) => ({ on: !!d.on, fri: d.fri || "", sat: d.sat || "", lift: !!d.lift, rent: !!d.rent });
@@ -513,7 +530,7 @@ function renderBudget() {
       c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain, and a casual dinner in at about ", h("b", {}, "$20"), " in place of dinner out.")
          : h("p", {}, "This would replace lunch on the mountain. We'd also stay in for a casual dinner that night, about $20 in place of about $100 for dinner out."),
       h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
-      h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { setC9(e.target.checked); voteC9(c9 ? "Yes" : "No"); const r = e.target.parentElement.getBoundingClientRect(); renderBudget(); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
+      h("div", { class: "switches" }, h("label", { class: "goldbtn" }, h("input", { type: "checkbox", checked: c9, onchange: (e) => { const r = e.target.parentElement.getBoundingClientRect(); setCloudNine(e.target.checked ? "Yes" : "No"); if (c9) { burst(r.left + r.width / 2, r.top, ["🍾", "🫧", "🥂", "🫧", "🏆"], 28, true); } } }),
         "I want to pop champagne like I just won a championship")))
   );
 }
@@ -532,21 +549,22 @@ function commitPicks(mine) {
 function togglePick(slotId, option) {
   if (!me) { toast("Pick your name at the top first."); return; }
   const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[slotId] || []), any = anyOf(me);
+  if (slotId === C9_SLOT && option === C9_PICK) { setCloudNine(cur.has(option) ? "No" : "Yes"); return; }
   cur.has(option) ? cur.delete(option) : cur.add(option);
   mine[slotId] = [...cur];
-  if (cur.size) any.delete(slotId);            // picking a place replaces "good with anything" for that section
+  if (cur.size && !(slotId === C9_SLOT && cur.size === 1 && cur.has(C9_PICK))) any.delete(slotId);   // picking a place replaces "good with anything" for that section
   mine._any = [...any]; commitPicks(mine);
 }
 function toggleAny(slotId) {
   if (!me) { toast("Pick your name at the top first."); return; }
   const mine = { ...(allPicks[me] || {}) }, any = anyOf(me);
-  if (any.has(slotId)) any.delete(slotId); else { any.add(slotId); mine[slotId] = []; }   // and the other way round
+  if (any.has(slotId)) any.delete(slotId); else { any.add(slotId); mine[slotId] = (mine[slotId] || []).filter((x) => slotId === C9_SLOT && x === C9_PICK); }   // and the other way round (Cloud Nine stays as it is)
   mine._any = [...any]; commitPicks(mine);
 }
 function toggleChris(on) {
   if (!me) { toast("Pick your name at the top first."); renderPlan(true); return; }
   const mine = { ...(allPicks[me] || {}) };
-  if (on) { mine._any = [...SLOT_IDS]; for (const id of SLOT_IDS) mine[id] = []; } else mine._any = [];
+  if (on) { mine._any = [...SLOT_IDS]; for (const id of SLOT_IDS) mine[id] = (mine[id] || []).filter((x) => id === C9_SLOT && x === C9_PICK); } else mine._any = [];
   commitPicks(mine);
 }
 function renderPlan(force) {
@@ -706,8 +724,7 @@ function renderMe() {
   form.addEventListener("input", (e) => { if (e.target.name !== "cloud9") meDirty = true; });
   form.addEventListener("change", (e) => {
     if (e.target.name !== "cloud9") { meDirty = true; return; }
-    store.saveVote(me, { cloud9: e.target.value }).catch(() => toast("Couldn't save that answer. Try again."));
-    if ((e.target.value !== "No") !== c9) { setC9(e.target.value !== "No"); renderBudget(); }
+    setCloudNine(e.target.value);
   });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -717,7 +734,7 @@ function renderMe() {
     const btn = form.querySelector("button.btn"); btn.disabled = true;
     try {
       await store.saveResponse(me, data); meDirty = false;
-      if (data.cloud9 && (data.cloud9 !== "No") !== c9) { setC9(data.cloud9 !== "No"); renderBudget(); }
+      if (data.cloud9) setCloudNine(data.cloud9);
       if (renting) {
         const rental = { package: g("r_package"), ability: g("r_ability"), height: g("r_height"), weight: g("r_weight"), age: g("r_age"), boot: g("r_boot"), days: g("r_days"), stance: g("r_stance"), helmet: g("r_helmet"), insurance: g("r_insurance") };
         const filled = Object.fromEntries(Object.entries(rental).filter(([, v]) => v !== "" && v != null));
@@ -918,7 +935,7 @@ function startApp() {
   const who = $("#who");
   who.replaceChildren(h("option", { value: "" }, "Who are you?"), ...PEOPLE.map((p) => h("option", { value: p, selected: p === me }, p)));
   who.addEventListener("change", () => { const prev = me; me = who.value; ls.set("aspen_me", me);
-    if (me) { if (skiDocs[me]) { ski = skiFrom(skiDocs[me]); if ("c9" in skiDocs[me]) c9 = !!skiDocs[me].c9; } else if (prev) { ski = { ...SKI_NONE }; c9 = false; } else if (ski.on || c9) { store.saveSki(me, { ...ski, c9 }).catch(() => {}); if (c9 && !responses.find((x) => key(x.name || "") === key(me))?.cloud9) voteC9("Yes"); } ls.set("aspen_ski2", ski); ls.set("aspen_c9", c9); }
+    if (me) { if (skiDocs[me]) { ski = skiFrom(skiDocs[me]); if ("c9" in skiDocs[me]) c9 = !!skiDocs[me].c9; } else if (prev) { ski = { ...SKI_NONE }; c9 = false; } else if (ski.on || c9) { store.saveSki(me, { ...ski, c9 }).catch(() => {}); if (c9 && !responses.find((x) => key(x.name || "") === key(me))?.cloud9) setCloudNine("Yes"); } ls.set("aspen_ski2", ski); ls.set("aspen_c9", c9); }
     renderBudget(); renderMe(); renderPlan(true); });
   if (user?.organizer) $("nav.tabs .wrap").append(h("button", { "data-tab": "report", "aria-selected": "false" }, "Report"));
   document.querySelectorAll("nav.tabs button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
