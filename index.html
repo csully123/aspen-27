@@ -677,6 +677,7 @@ const Q = {
 const AIRPORTS = ["Aspen (ASE)", "Eagle/Vail (EGE)", "Denver (DEN)", "Driving", "Other"];
 const RENTAL_FIELDS = { packages: ["Performance skis", "Demo skis", "Snowboard", "Demo snowboard"], ability: ["First time ever", "I (beginner)", "II (intermediate)", "III (advanced)"] };
 
+const isSkis = (v) => /skis/i.test(v || "");   // stance only matters on a snowboard
 function radio(name, opts, val) {
   return h("div", { class: "opts" }, opts.map((o) => h("label", {}, h("input", { type: "radio", name, value: o, checked: val === o }), o)));
 }
@@ -693,19 +694,23 @@ function renderMe() {
   const inp = (name, type, val, extra = {}) => h("input", { type, name, value: val ?? "", ...extra });
   const sel = (name, opts, val) => h("select", { name }, h("option", { value: "" }, "Choose"), opts.map((o) => h("option", { value: o, selected: val === o }, o)));
 
+  const pkgSel = sel("r_package", RENTAL_FIELDS.packages, rent.package);
+  const stanceField = field("Stance (snowboard only)", sel("r_stance", ["Regular (left foot forward)", "Goofy (right foot forward)", "Not sure"], rent.stance));
+  stanceField.classList.toggle("hide", isSkis(rent.package));
+  pkgSel.addEventListener("change", () => stanceField.classList.toggle("hide", isSkis(pkgSel.value)));
   const rentalBox = h("div", { class: "card", id: "rentalBox" },
     h("h3", {}, "Rental details"),
     h("p", { class: "small muted" }, "This goes on the ski shop's form so your gear is waiting at Timbers. Only Chris can see these answers."),
     Object.keys(rent).length ? null : h("p", { class: "small muted" }, "Already filled this in on another phone or computer? Leave it blank. Your earlier answers are kept, and anything you enter here updates just that item."),
     h("div", { class: "grid2" },
-      field("What are you renting?", sel("r_package", RENTAL_FIELDS.packages, rent.package)),
+      field("What are you renting?", pkgSel),
       field("Ability", sel("r_ability", RENTAL_FIELDS.ability, rent.ability)),
       field("Height (for example 5'10\")", inp("r_height", "text", rent.height)),
       field("Weight (lb)", inp("r_weight", "number", rent.weight, { inputmode: "numeric", min: 50, max: 400 })),
       field("Age", inp("r_age", "number", rent.age, { inputmode: "numeric", min: 18, max: 99 })),
       field("Boot or shoe size", inp("r_boot", "text", rent.boot)),
       field("Number of rental days", sel("r_days", ["1", "2", "3", "4"], rent.days)),
-      field("Stance (snowboard only)", sel("r_stance", ["Regular (left foot forward)", "Goofy (right foot forward)", "Not sure"], rent.stance))),
+      stanceField),
     h("label", { class: "q" }, "Helmet?", h("span", { class: "hint" }, "About $14 a day.")), radio("r_helmet", ["Yes", "No"], rent.helmet),
     h("label", { class: "q" }, "Damage insurance?", h("span", { class: "hint" }, "$3 a day. Doesn't cover loss or theft.")), radio("r_insurance", ["Yes", "No"], rent.insurance));
 
@@ -758,6 +763,7 @@ function renderMe() {
       if (renting) {
         const rental = { package: g("r_package"), ability: g("r_ability"), height: g("r_height"), weight: g("r_weight"), age: g("r_age"), boot: g("r_boot"), days: g("r_days"), stance: g("r_stance"), helmet: g("r_helmet"), insurance: g("r_insurance") };
         const filled = Object.fromEntries(Object.entries(rental).filter(([, v]) => v !== "" && v != null));
+        if (isSkis(rental.package)) filled.stance = "";   // switching to skis clears an earlier stance answer
         if (Object.keys(filled).length) { ls.set("aspen_rental_" + key(me), { ...rent, ...filled }); await store.saveRental(me, filled); }
       } else if (Object.keys(rent).length) { ls.set("aspen_rental_" + key(me), {}); await store.deleteRental(me); }
       toast("Saved. Thank you, " + me + "!"); burst(innerWidth / 2, innerHeight - 90, ["❄️", "⛷️", "❄️", "🏔️"], 22, true);
