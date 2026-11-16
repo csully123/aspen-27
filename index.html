@@ -199,7 +199,10 @@
   @media (prefers-color-scheme: dark) { .flag.tight { color: #f1cf73; background: #3d3211; } .flag.late { color: #f5a3a3; background: #45191b; } }
   .trip h3 { margin: 16px 0 6px; }
   .trip ul, .trip ol { margin: 6px 0 0; padding-left: 22px; } .trip li { margin: 7px 0; }
-  .trip .lede + .lede { margin-top: 12px; }
+  .trip .lede + .lede { margin-top: 12px; } .trip ol + .lede { margin-top: 16px; }
+  h2.welcome { font-size: clamp(1.8rem, 7.2vw, 2.7rem); line-height: 1.05; text-transform: uppercase; letter-spacing: .01em; color: #6d3fd1; margin-bottom: 10px; }
+  @media (prefers-color-scheme: dark) { h2.welcome { color: #b9a2ff; } }
+  .chrisnote { margin: 2px 0 14px; }
   figure.logo { margin: 12px 0 0; }
   figure.logo img { display: block; width: 100%; max-width: 280px; height: auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
   figure.logo figcaption { margin-top: 6px; }
@@ -517,6 +520,13 @@ function togglePick(slotId, option) {
   mine[slotId] = [...cur]; allPicks = { ...allPicks, [me]: mine }; renderPlan(true);
   store.savePicks(me, mine).catch(() => toast("Couldn't save that pick. Try again."));
 }
+function toggleChris(on) {
+  if (!me) { toast("Pick your name at the top first."); renderPlan(true); return; }
+  const mine = { ...(allPicks[me] || {}) };
+  if (on) mine._chris = true; else delete mine._chris;
+  allPicks = { ...allPicks, [me]: mine }; renderPlan(true);
+  store.savePicks(me, mine).catch(() => toast("Couldn't save that. Try again."));
+}
 function renderPlan(force) {
   if (!force && document.activeElement?.matches?.(".ideaform input")) { planDirty = true; return; }
   planDirty = false;
@@ -539,6 +549,9 @@ function renderPlan(force) {
   $("#tab-plan").replaceChildren(
     h("p", { class: "muted" }, "Where we went last year next to this year's options. Costs are per person. Nothing is booked yet."),
     h("p", { style: "font-weight:700" }, "Tap an option to mark it as your pick. Tap it again to remove it. A dinner spot you pick for one night comes off the other nights."),
+    h("div", { class: "switches" }, h("label", {}, h("input", { type: "checkbox", checked: !!(me && allPicks[me]?._chris), onchange: (e) => toggleChris(e.target.checked) }), "I don't care, Chris can pick for me")),
+    h("p", { class: "small muted chrisnote" }, me && allPicks[me]?._chris ? "Done. Chris will pick for you. You can still tap anything below if something jumps out." : "Tap that if you're happy with whatever Chris chooses.",
+      PEOPLE.some((p) => allPicks[p]?._chris) ? " Leaving it to Chris so far: " + PEOPLE.filter((p) => allPicks[p]?._chris).join(", ") + "." : ""),
     ...PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
       d.slots.map((s) => h("div", { class: "cmp" },
         h("div", { class: "label" }, s.label),
@@ -719,7 +732,7 @@ function reportSections() {
       `Saturday full day: ${skiNames((d) => d.on && d.sat === "full")}`, `Saturday half day: ${skiNames((d) => d.on && d.sat === "half")}`,
       `Buying lift tickets: ${skiNames((d) => skis(d) && d.lift)}`, `Skiing but not buying lift tickets: ${skiNames((d) => skis(d) && !d.lift)}`,
       `Renting gear: ${skiNames((d) => skis(d) && d.rent)}`, `Not skiing or no answer: ${list(PEOPLE.filter((p) => !sk.some((d) => d.name === p && skis(d))))}`] },
-    { title: "Picks on the Plan tab", lines: picks.length ? picks : ["No picks yet"] },
+    { title: "Picks on the Plan tab", lines: [`Tapped "Chris can pick for me": ${list(PEOPLE.filter((p) => allPicks[p]?._chris))}`, ...(picks.length ? picks : ["No picks yet"])] },
     { title: "Ideas people posted", lines: ideas.length ? ideas : ["No ideas yet"] },
     { title: "Arriving flights", lines: legs("arrive").length ? legs("arrive") : ["No flights entered yet"] },
     { title: "Departing flights", lines: legs("depart").length ? legs("depart") : ["No flights entered yet"] },
@@ -801,15 +814,16 @@ function renderTrip() {
         note ? h("tr", { class: "note" + (theirs ? " theirs" : "") }, h("td", { colspan: 4 }, h("span", { class: "flag " + note[0] }, note[1]), h("span", { class: "small" }, note[2]))) : null]; }))));
   $("#tab-trip").replaceChildren(
     h("div", { class: "card trip" },
-      h("h2", {}, "We're running it back"),
-      h("p", { class: "lede" }, "Same house, more people, colder month. Seven of us take over Timbers Club in Snowmass from Thursday, January 21 to Sunday, January 24 for skiing, hot tubs, game nights and at least one dinner none of us should be paying for. Better yet, it's Gay Ski Week in Aspen, and not just any year: it's the 50th anniversary. That means a downhill costume contest on Friday, a dance party on top of the mountain, and a town in the best mood it's been in all winter. Translation: it should be a phenomenal time."),
-      h("p", { class: "lede" }, "This site is the whole plan in one place. ", h("b", {}, "The Trip"), " (this page) covers the house, flights and the schedule. ", h("b", {}, "Budget"), " shows roughly what the weekend will cost you. ", h("b", {}, "Plan"), " is where we vote on every meal and night out. ", h("b", {}, "My answers"), " is the short list of things I need from each of you."),
+      h("h2", { class: "welcome" }, "Welcome to Aspen Trip 2027"),
+      h("p", { class: "lede" }, "Hello peeps. The seven of us will be taking over the Timbers Club in Snowmass from Thursday, January 21 to Sunday, January 24 for skiing, hot tubs, potential game nights, and silly nights out. Better yet, it's the 50th anniversary of Gay Ski Week in Aspen, which is fantastic news for Dan and Blake. Much to look forward to."),
+      h("p", { class: "lede" }, "This site is the whole plan in one place. ", h("b", {}, "The Trip"), " (this page) covers the house, flights and the schedule. ", h("b", {}, "Budget"), " shows roughly what the weekend will cost you. ", h("b", {}, "Plan"), " is where we vote on restaurants and nights out. ", h("b", {}, "My answers"), " is the short list of things I need from each of you."),
       h("h3", {}, "What I need you to do"),
       h("ol", {},
         h("li", {}, "Pick your name at the top of the page."),
         h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("budget") }, "Budget"), ", tap whether you're skiing and whether you're in on Cloud Nine (bottom of the page) to see your estimated trip cost."),
-        h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("plan") }, "Plan"), ", tap your picks for each meal and night out, or post a different idea."),
-        h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), ", answer the questions and add your flight once you book. If you're renting gear, the rental details go there too."))),
+        h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("plan") }, "Plan"), ", tap your picks for each meal and night out, or post a different idea. If you don't care and just want Chris to pick, click that button at the top."),
+        h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), ", answer the questions and add your flight once you book. If you're renting gear, the rental details go there too.")),
+      h("p", { class: "lede", style: "font-weight:700" }, "Should be a hell of a time! Let me know of any questions.")),
 
     h("div", { class: "card trip" },
       h("h2", {}, "Where we're staying"),
