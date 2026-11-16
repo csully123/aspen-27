@@ -64,6 +64,7 @@
   .choice span { display: block; }
   .choice .ttl { font-weight: 800; } .choice .price { font-weight: 700; color: var(--accent); margin: 2px 0 4px; }
   .choice .info { font-size: .85rem; color: var(--muted); }
+  .choice .pickchips { display: flex; } .choice .pickchip { display: inline-block; }
   .choice .price .advnote { display: inline; font-weight: 400; font-size: .85rem; color: var(--muted); }
   .choice.on { border-color: var(--accent); background: var(--soft); box-shadow: inset 0 0 0 1px var(--accent); }
   .daycard summary { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; cursor: pointer; list-style: none;
@@ -500,11 +501,14 @@ function renderBudget() {
   const dayTotal = (d) => rowsFor(d).reduce((a, r) => a + r[1], 0);
   const total = BUDGET.reduce((s, d) => s + dayTotal(d), 0);
   const pill = (on, label, fn) => h("label", {}, h("input", { type: "checkbox", checked: on, onchange: fn }), label);
-  const choice = (k, kind) => { const d = SKI.days[k], on = ski[k] === kind;
+  const skiers = (k, kind) => PEOPLE.filter((p) => p === me ? (ski.on && ski[k] === kind) : (skiDocs[p]?.on && skiDocs[p][k] === kind));
+  const others = PEOPLE.filter((p) => p !== me && skiDocs[p]?.on && (skiDocs[p].fri || skiDocs[p].sat));
+  const choice = (k, kind) => { const d = SKI.days[k], on = ski[k] === kind, who = skiers(k, kind);
     return h("button", { type: "button", class: "choice" + (on ? " on" : ""), "aria-pressed": on ? "true" : "false", onclick: () => { ski[k] = on ? "" : kind; if (!ski.fri && !ski.sat) { ski.lift = false; ski.rent = false; } save(); } },
       h("span", { class: "ttl" }, `I plan on skiing a ${kind} day on ${d.day}`),
       h("span", { class: "price" }, `Lift ticket about ${money0(d[kind])}`, kind === "full" && h("span", { class: "advnote" }, " (advanced booking can give discount)")),
-      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo)); };
+      h("span", { class: "info" }, kind === "full" ? SKI.fullInfo : SKI.halfInfo),
+      who.length > 0 && h("span", { class: "pickchips" }, who.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + "'s Pick")))); };
   const grand = h("div", { class: "card grand", onclick: (e) => burst(e.clientX, e.clientY, ["💸", "❄️", "💵"], 16) },
     h("div", { class: "lbl" }, "Your rough total for the trip"),
     h("div", { class: "big" }, money0(total)),
@@ -515,6 +519,7 @@ function renderBudget() {
       h("p", { class: "muted" }, "Rounded from prior trips I've taken in Aspen. Treat it as this year's budget. Flights aren't included."),
       !me && h("p", { class: "small", style: "font-weight:700" }, "Pick your name at the top first so your skiing choices are saved."),
       h("div", { class: "switches" }, pill(ski.on, "I plan on skiing", (e) => { ski.on = e.target.checked; save(); })),
+      !ski.on && others.length > 0 && h("p", { class: "small muted", style: "margin:8px 0 0" }, "Planning to ski so far: " + others.join(", ") + ". Tap the button to see which days."),
       ski.on && h("div", { class: "choices" }, choice("fri", "full"), choice("fri", "half"), choice("sat", "full"), choice("sat", "half")),
       anyDay && h("div", { class: "switches" },
         pill(ski.lift, "I plan on buying lift tickets for those days", (e) => { ski.lift = e.target.checked; save(); }),
@@ -946,7 +951,9 @@ function startApp() {
   $("#hero").addEventListener("click", (e) => { if (!e.target.closest("select")) skiRun(); });
   startSnow();
   store.watchResponses((all) => { const list = all.filter((d) => !d.type);
+    const skiSig = (o) => JSON.stringify(PEOPLE.map((p) => [p, !!o[p]?.on, o[p]?.fri || "", o[p]?.sat || ""])), skiBefore = skiSig(skiDocs);
     skiDocs = Object.fromEntries(all.filter((d) => d.type === "ski").map((d) => [d.name, d]));
+    if (skiSig(skiDocs) !== skiBefore) renderBudget();
     if (me && skiDocs[me]) { const next = skiFrom(skiDocs[me]); if (JSON.stringify(next) !== JSON.stringify(ski)) { ski = next; ls.set("aspen_ski2", ski); renderBudget(); }
       const d = skiDocs[me]; if ("c9" in d) { if (!!d.c9 !== c9) { c9 = !!d.c9; ls.set("aspen_c9", c9); renderBudget(); } } else if (c9 && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); } }
     else if (me && (ski.on || c9) && !skiSynced) { skiSynced = true; store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
