@@ -209,6 +209,17 @@
   .flag.tight { color: #7a5600; background: #fbeec6; } .flag.late { color: #9b2226; background: #fbdcdc; }
   @media (prefers-color-scheme: dark) { .flag.tight { color: #f1cf73; background: #3d3211; } .flag.late { color: #f5a3a3; background: #45191b; } }
   .trip h3 { margin: 16px 0 6px; }
+  details.fold > summary { display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; border-radius: 10px; margin: -6px -8px; padding: 6px 8px; }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary:hover { background: var(--soft); }
+  details.fold > summary::before { content: "▾"; flex: 0 0 auto; width: 1.7em; height: 1.7em; border: 2px solid var(--accent); border-radius: 8px; color: var(--accent); display: inline-grid; place-items: center; font-size: .85rem; }
+  details.fold:not([open]) > summary::before { content: "▸"; }
+  details.fold > summary::after { content: "tap to close"; flex: 0 0 auto; font: 600 .72rem/1 -apple-system, "Segoe UI", sans-serif; color: var(--muted); white-space: nowrap; }
+  details.fold:not([open]) > summary::after { content: "tap to open"; }
+  details.fold > summary h2, details.fold > summary h3 { margin: 0; flex: 1 1 auto; min-width: 0; }
+  details.fold[open] > summary { margin-bottom: 8px; }
+  details.fold.sub { margin-top: 16px; }
+  details.flightbox.fold > summary { margin: -4px -6px; padding: 4px 6px; } details.flightbox.fold[open] > summary { margin-bottom: 6px; }
   .trip ul, .trip ol { margin: 6px 0 0; padding-left: 22px; } .trip li { margin: 7px 0; }
   .trip .lede + .lede { margin-top: 12px; } .trip ol + .lede { margin-top: 16px; }
   h2.welcome { font-size: clamp(1.8rem, 7.2vw, 2.7rem); line-height: 1.05; text-transform: uppercase; letter-spacing: .01em; color: #6d3fd1; margin-bottom: 10px; }
@@ -869,9 +880,10 @@ function renderTrip() {
           h("div", { class: "small" }, ext(links[air], "tlink", "See on " + air))),
         h("td", { class: "num" }, money0(price))),
         note ? h("tr", { class: "note" + (theirs ? " theirs" : "") }, h("td", { colspan: 4 }, h("span", { class: "flag " + note[0] }, note[1]), h("span", { class: "small" }, note[2]))) : null]; }))));
+  // Every section folds shut when its heading is tapped. Which ones are shut is remembered on this device.
+  const fold = (id, cls, head, ...kids) => h("details", { class: cls + " fold", open: !shut["trip:" + id], ontoggle: (e) => { shut["trip:" + id] = !e.currentTarget.open; ls.set("aspen_shut", shut); } }, h("summary", {}, head), ...kids);
   $("#tab-trip").replaceChildren(
-    h("div", { class: "card trip" },
-      h("h2", { class: "welcome" }, "Welcome to Aspen Trip 2027"),
+    fold("welcome", "card trip", h("h2", { class: "welcome" }, "Welcome to Aspen Trip 2027"),
       h("p", { class: "lede" }, "Hello peeps. The seven of us will be taking over the Timbers Club in Snowmass from Thursday, January 21 to Sunday, January 24 for skiing, hot tubs, potential game nights, and silly nights out. Better yet, it's the 50th anniversary of Gay Ski Week in Aspen, which is fantastic news for Dan and Blake. Much to look forward to."),
       h("p", { class: "lede" }, "On this site, ", h("b", {}, "The Trip"), " (this page) covers the house, flights and the schedule. ", h("b", {}, "Budget"), " shows roughly what the weekend will cost you. ", h("b", {}, "Plan"), " is where we vote on restaurants and nights out. ", h("b", {}, "My answers"), " is the short list of things I need from each of you."),
       h("h3", {}, "What I need you to do"),
@@ -882,8 +894,7 @@ function renderTrip() {
         h("li", {}, "On ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), ", answer the questions and add your flight once you book. If you're renting gear, the rental details go there too.")),
       h("p", { class: "lede", style: "font-weight:700" }, "Should be a hell of a time! Let me know of any questions.")),
 
-    h("div", { class: "card trip" },
-      h("h2", {}, "Where we're staying"),
+    fold("stay", "card trip", h("h2", {}, "Where we're staying"),
       h("p", { class: "addr", style: "margin:8px 0 2px" }, "Timbers Club, Unit #422"),
       h("div", {}, "65 Timbers Club Ct, Snowmass Village, Colorado 81615"),
       h("p", { class: "small", style: "margin:6px 0 0" }, ext(TRIP.map, "tlink", "Open in Google Maps")),
@@ -906,28 +917,25 @@ function renderTrip() {
           h("li", {}, "Bathing suit and flip flops."),
           h("li", {}, "If we do Cloud Nine, wear ski clothes you don't mind getting doused in champagne. They hand out plastic bags for jackets, but anything outside the bag gets wet.")))),
 
-    h("div", { class: "card trip" },
-      h("h2", {}, "Flight Options"),
+    fold("flights", "card trip", h("h2", {}, "Flight Options"),
       h("p", { class: "muted", style: "margin:4px 0 0" }, `See below for flight options. Prices were checked on ${TRIP.checked} and may have changed.`),
-      h("div", { class: "flightbox" },
-        h("h3", { style: "margin:0 0 4px" }, "Ali and Dan's flights"),
+      fold("booked", "flightbox", h("h3", {}, "Ali and Dan's flights"),
         TRIP.booked.map((f) => h("div", { class: "leg" },
           h("div", {}, h("div", { class: "day" }, f.day), h("div", {}, f.flight + ": " + f.route), h("div", { class: "small muted" }, f.detail)),
           h("div", { class: "price" }, money0(f.price)))),
         h("p", { style: "margin:12px 0 6px" }, ext(TRIP.united, "abtn", "See these flights on United")),
         h("div", { class: "small muted" }, "The link opens United's Chicago to Aspen search for our dates. Pick the 9:15 AM out and the 4:20 PM back to be on their planes.")),
-      h("h3", {}, "Thursday, Jan 21: Chicago O'Hare to Aspen"),
+      fold("out", "sub", h("h3", {}, "Thursday, Jan 21: Chicago O'Hare to Aspen"),
       h("p", { class: "small muted", style: "margin:0 0 6px" }, `Our first reservation would be at ${TRIP.firstRes.place} in Aspen, somewhere between ${TRIP.firstRes.from} and ${TRIP.firstRes.to} on Thursday. We haven't picked the place yet. No pressure to join that, but if you want to, aim to land by about 2:00 PM. Flights that cut it close are flagged below.`),
       flights(TRIP.out, { United: TRIP.unitedOut, American: TRIP.aaOut }, true),
-      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allOut, "tlink", "Compare all Thursday flights on Google Flights")),
-      h("h3", {}, "Sunday, Jan 24: Aspen to Chicago O'Hare"),
+      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allOut, "tlink", "Compare all Thursday flights on Google Flights"))),
+      fold("back", "sub", h("h3", {}, "Sunday, Jan 24: Aspen to Chicago O'Hare"),
       flights(TRIP.back, { United: TRIP.unitedBack, American: TRIP.aaBack }, false),
-      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allBack, "tlink", "Compare all Sunday flights on Google Flights")),
+      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allBack, "tlink", "Compare all Sunday flights on Google Flights"))),
       h("p", { class: "small muted", style: "margin:14px 0 0" }, "Prices are one way, per person, in economy. Times are local to each airport. Each link opens that airline's search for our date, so pick the matching departure time."),
       h("p", { style: "margin:14px 0 0" }, "Once you book, add your flight on the ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), " tab so Timbers knows when to pick you up.")),
 
-    h("div", { class: "card trip" },
-      h("h2", {}, "Itinerary"),
+    fold("itin", "card trip", h("h2", {}, "Itinerary"),
       h("p", { class: "muted", style: "margin:4px 0 10px" }, "Still taking shape. Go through the trip cost on the ", h("button", { class: "link", type: "button", onclick: () => showTab("budget") }, "Budget"), " tab and then cast your votes on the ", h("button", { class: "link", type: "button", onclick: () => showTab("plan") }, "Plan"), " tab. This fills in once we lock things."),
       TRIP.days.map((d) => h("div", { class: "itin" }, h("span", { class: "d" }, d), h("span", { class: "tbd" }, "TBD"))))
   );
