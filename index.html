@@ -179,6 +179,7 @@
   .ideabox button.btn.ghost { background: #ffffff; color: #1b5f9e; border: 2px solid #2476bd; box-shadow: 0 3px 0 #2476bd55; }
   .ideabox button.btn.ghost:hover { background: #eaf3fb; }
   .ideabtns { display: flex; flex-wrap: wrap; gap: 8px; }
+  ul.c9list { margin: 0 0 12px; padding-left: 22px; } ul.c9list li { margin: 6px 0; }
   .ideabox button.btn.ghost.on { background: #2476bd; color: #ffffff; border-color: #2476bd; }
   .ideabox button.btn.ghost.on:hover { background: #1f68a8; }
   .pick.taken { opacity: .6; border: 1px dashed var(--line); }
@@ -505,6 +506,10 @@ function renderBudget() {
     grand,
     h("div", { class: "card" },
       h("h2", {}, c9 ? "Cloud Nine is in your total 🍾" : "Cloud Nine would be extra 🍾"),
+      h("p", {}, h("b", {}, "What it is: "), "Cloud Nine is the champagne-spraying lunch party on the mountain at Aspen Highlands. We'd do the 1:45 PM seating on Friday: ski there, eat lunch, then the music goes up and the bottles come out."),
+      h("ul", { class: "c9list" },
+        h("li", {}, h("b", {}, "About $685 a person to book. "), "That part is non-refundable."),
+        h("li", {}, h("b", {}, "About $300 a person once we're there. "), "That covers one bottle of champagne each: you spray half and drink the other half. You can order more if you get carried away.")),
       c9 ? h("p", {}, "Friday now has the Cloud 9 Lunch / Party at about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " in place of lunch on the mountain, and a casual dinner in at about ", h("b", {}, "$20"), " in place of dinner out.")
          : h("p", {}, "The champagne lunch on Friday costs about ", h("b", {}, money0(CLOUD9_THIS_YEAR)), " a person and would replace lunch on the mountain. We'd also stay in for a casual dinner that night, about $20 in place of about $100 for dinner out."),
       h("p", { class: "small muted" }, "Vote on it in My answers. We need to decide soon."),
