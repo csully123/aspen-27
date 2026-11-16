@@ -178,6 +178,9 @@
   button.btn.sm { padding: 8px 14px; font-size: .9rem; }
   .ideabox button.btn.ghost { background: #ffffff; color: #1b5f9e; border: 2px solid #2476bd; box-shadow: 0 3px 0 #2476bd55; }
   .ideabox button.btn.ghost:hover { background: #eaf3fb; }
+  .ideabtns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ideabox button.btn.ghost.on { background: #2476bd; color: #ffffff; border-color: #2476bd; }
+  .ideabox button.btn.ghost.on:hover { background: #1f68a8; }
   .pick.taken { opacity: .6; border: 1px dashed var(--line); }
   .lede { font-size: 1.06rem; line-height: 1.6; margin: 8px 0 0; }
   a.abtn { display: inline-block; background: var(--accent); color: var(--accent-ink); border-radius: 999px; font-weight: 800; padding: 11px 18px; text-decoration: none;
@@ -513,19 +516,33 @@ function renderBudget() {
 /* ---------- plan tab ---------- */
 let allPicks = {}, openIdea = "", ideaDraft = "", planDirty = false;
 const DINNERS = { "thu-din": "Thursday dinner", "fri-din": "Friday dinner", "sat-din": "Saturday dinner" };
+const SLOT_IDS = PLAN.flatMap((d) => d.slots.map((s) => s.id));
+// slots where a person said "I'm good with anything" (the Chris button at the top sets every slot)
+const anyOf = (p) => { const m = allPicks[p] || {}; return new Set(m._chris ? SLOT_IDS : (m._any || [])); };
+const allAny = (p) => { const a = anyOf(p); return SLOT_IDS.every((id) => a.has(id)); };
+function commitPicks(mine) {
+  delete mine._chris; allPicks = { ...allPicks, [me]: mine }; renderPlan(true);
+  store.savePicks(me, mine).catch(() => toast("Couldn't save that. Try again."));
+}
 function togglePick(slotId, option) {
   if (!me) { toast("Pick your name at the top first."); return; }
-  const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[slotId] || []);
+  const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[slotId] || []), any = anyOf(me);
   cur.has(option) ? cur.delete(option) : cur.add(option);
-  mine[slotId] = [...cur]; allPicks = { ...allPicks, [me]: mine }; renderPlan(true);
-  store.savePicks(me, mine).catch(() => toast("Couldn't save that pick. Try again."));
+  mine[slotId] = [...cur];
+  if (cur.size) any.delete(slotId);            // picking a place replaces "good with anything" for that section
+  mine._any = [...any]; commitPicks(mine);
+}
+function toggleAny(slotId) {
+  if (!me) { toast("Pick your name at the top first."); return; }
+  const mine = { ...(allPicks[me] || {}) }, any = anyOf(me);
+  if (any.has(slotId)) any.delete(slotId); else { any.add(slotId); mine[slotId] = []; }   // and the other way round
+  mine._any = [...any]; commitPicks(mine);
 }
 function toggleChris(on) {
   if (!me) { toast("Pick your name at the top first."); renderPlan(true); return; }
   const mine = { ...(allPicks[me] || {}) };
-  if (on) mine._chris = true; else delete mine._chris;
-  allPicks = { ...allPicks, [me]: mine }; renderPlan(true);
-  store.savePicks(me, mine).catch(() => toast("Couldn't save that. Try again."));
+  if (on) { mine._any = [...SLOT_IDS]; for (const id of SLOT_IDS) mine[id] = []; } else mine._any = [];
+  commitPicks(mine);
 }
 function renderPlan(force) {
   if (!force && document.activeElement?.matches?.(".ideaform input")) { planDirty = true; return; }
@@ -541,17 +558,21 @@ function renderPlan(force) {
     if (form) form.addEventListener("submit", async (e) => { e.preventDefault(); const text = ideaDraft.trim(); if (!text) return;
       try { await store.addSuggestion(me, text, s.id); openIdea = ""; ideaDraft = ""; toast("Idea posted. Thank you!"); } catch { toast("Couldn't post that. Try again."); }
       renderPlan(true); });
+    const anyWho = PEOPLE.filter((p) => anyOf(p).has(s.id)), iAmAny = !!me && anyOf(me).has(s.id);
     return h("div", { class: "ideabox" },
       list.length > 0 && h("div", {}, h("div", { class: "colhead" }, "Ideas from the group"), list.map((x) => h("div", { class: "idea" }, h("b", {}, x.name + ": "), x.text))),
-      form || h("button", { type: "button", class: "btn ghost sm", onclick: () => { if (!me) { toast("Pick your name at the top first."); return; } openIdea = s.id; ideaDraft = ""; renderPlan(true); setTimeout(() => $(".ideaform input")?.focus(), 0); } }, "+ Post a different idea"));
+      form || h("div", { class: "ideabtns" },
+        h("button", { type: "button", class: "btn ghost sm", onclick: () => { if (!me) { toast("Pick your name at the top first."); return; } openIdea = s.id; ideaDraft = ""; renderPlan(true); setTimeout(() => $(".ideaform input")?.focus(), 0); } }, "+ Post a different idea"),
+        h("button", { type: "button", class: "btn ghost sm" + (iAmAny ? " on" : ""), "aria-pressed": iAmAny ? "true" : "false", onclick: () => toggleAny(s.id) }, (iAmAny ? "✓ " : "") + "I'm good with anything for this")),
+      anyWho.length > 0 && h("div", { class: "pickchips" }, anyWho.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + ": good with anything"))));
   };
   const other = suggestions.filter((x) => !x.slot);
   $("#tab-plan").replaceChildren(
     h("p", { class: "muted" }, "Where we went last year next to this year's options. Costs are per person. Nothing is booked yet."),
     h("p", { style: "font-weight:700" }, "Tap an option to mark it as your pick. Tap it again to remove it. A dinner spot you pick for one night comes off the other nights."),
-    h("div", { class: "switches" }, h("label", {}, h("input", { type: "checkbox", checked: !!(me && allPicks[me]?._chris), onchange: (e) => toggleChris(e.target.checked) }), "I don't care, Chris can pick for me")),
-    h("p", { class: "small muted chrisnote" }, me && allPicks[me]?._chris ? "Done. Chris will pick for you. You can still tap anything below if something jumps out." : "Tap that if you're happy with whatever Chris chooses.",
-      PEOPLE.some((p) => allPicks[p]?._chris) ? " Leaving it to Chris so far: " + PEOPLE.filter((p) => allPicks[p]?._chris).join(", ") + "." : ""),
+    h("div", { class: "switches" }, h("label", {}, h("input", { type: "checkbox", checked: !!(me && allAny(me)), onchange: (e) => toggleChris(e.target.checked) }), "I don't care, Chris can pick for me")),
+    h("p", { class: "small muted chrisnote" }, me && allAny(me) ? "Done. Every section below is marked \"good with anything\" for you. Tap a place in any section if you change your mind." : "Tap that to mark every section \"good with anything\" in one go. Or go section by section below: pick places where you have a preference, and tap \"I'm good with anything for this\" where you don't.",
+      PEOPLE.some(allAny) ? " Leaving everything to Chris so far: " + PEOPLE.filter(allAny).join(", ") + "." : ""),
     ...PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
       d.slots.map((s) => h("div", { class: "cmp" },
         h("div", { class: "label" }, s.label),
@@ -714,9 +735,13 @@ function reportSections() {
   const sk = Object.values(skiDocs), skis = (d) => d.on && (d.fri || d.sat);
   const skiNames = (fn) => list(PEOPLE.filter((p) => sk.some((d) => d.name === p && fn(d))));
   const picks = [];
-  for (const d of PLAN) for (const s of d.slots) for (const o of s.picks) {
-    const who = PEOPLE.filter((p) => (allPicks[p]?.[s.id] || []).includes(o.name));
-    if (who.length) picks.push(`${d.day.split(",")[0]} ${s.label.toLowerCase()}: ${o.name} (${who.length}): ${who.join(", ")}`);
+  for (const d of PLAN) for (const s of d.slots) {
+    for (const o of s.picks) {
+      const who = PEOPLE.filter((p) => (allPicks[p]?.[s.id] || []).includes(o.name));
+      if (who.length) picks.push(`${d.day.split(",")[0]} ${s.label.toLowerCase()}: ${o.name} (${who.length}): ${who.join(", ")}`);
+    }
+    const anyWho = PEOPLE.filter((p) => anyOf(p).has(s.id));
+    if (anyWho.length) picks.push(`${d.day.split(",")[0]} ${s.label.toLowerCase()}: good with anything (${anyWho.length}): ${anyWho.join(", ")}`);
   }
   const slotName = (id) => { for (const d of PLAN) for (const s of d.slots) if (s.id === id) return `${d.day.split(",")[0]} ${s.label.toLowerCase()}`; return "General"; };
   const ideas = [...suggestions].reverse().map((x) => `${slotName(x.slot)}: ${x.name}: ${x.text}`);
@@ -732,7 +757,7 @@ function reportSections() {
       `Saturday full day: ${skiNames((d) => d.on && d.sat === "full")}`, `Saturday half day: ${skiNames((d) => d.on && d.sat === "half")}`,
       `Buying lift tickets: ${skiNames((d) => skis(d) && d.lift)}`, `Skiing but not buying lift tickets: ${skiNames((d) => skis(d) && !d.lift)}`,
       `Renting gear: ${skiNames((d) => skis(d) && d.rent)}`, `Not skiing or no answer: ${list(PEOPLE.filter((p) => !sk.some((d) => d.name === p && skis(d))))}`] },
-    { title: "Picks on the Plan tab", lines: [`Tapped "Chris can pick for me": ${list(PEOPLE.filter((p) => allPicks[p]?._chris))}`, ...(picks.length ? picks : ["No picks yet"])] },
+    { title: "Picks on the Plan tab", lines: [`Leaving everything to Chris: ${list(PEOPLE.filter(allAny))}`, ...(picks.length ? picks : ["No picks yet"])] },
     { title: "Ideas people posted", lines: ideas.length ? ideas : ["No ideas yet"] },
     { title: "Arriving flights", lines: legs("arrive").length ? legs("arrive") : ["No flights entered yet"] },
     { title: "Departing flights", lines: legs("depart").length ? legs("depart") : ["No flights entered yet"] },
