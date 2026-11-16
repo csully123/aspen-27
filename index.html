@@ -594,7 +594,7 @@ function renderPlan(force) {
   planDirty = false;
   const pickers = (slotId, option) => PEOPLE.filter((p) => (allPicks[p]?.[slotId] || []).includes(option));
   const ideaBox = (s) => {
-    const list = suggestions.filter((x) => x.slot === s.id), open = openIdea === s.id;
+    const list = suggestions.filter((x) => x.slot === s.id).reverse(), open = openIdea === s.id;   // oldest first, so a new idea lands below the earlier ones
     const form = open && h("form", { class: "ideaform" },
       h("input", { type: "text", value: ideaDraft, maxlength: 300, placeholder: "Somewhere else we could go, or a different plan", "aria-label": "Your idea for " + s.label,
         oninput: (e) => { ideaDraft = e.target.value; }, onblur: () => setTimeout(() => { if (planDirty) renderPlan(); }, 200) }),
@@ -611,7 +611,7 @@ function renderPlan(force) {
         h("button", { type: "button", class: "btn ghost sm" + (iAmAny ? " on" : ""), "aria-pressed": iAmAny ? "true" : "false", onclick: () => toggleAny(s.id) }, (iAmAny ? "✓ " : "") + "I'm good with anything for this")),
       anyWho.length > 0 && h("div", { class: "pickchips" }, anyWho.map((n) => h("span", { class: "pickchip", style: "background:" + PICK_COLORS[PEOPLE.indexOf(n) % PICK_COLORS.length] }, n + ": good with anything"))));
   };
-  const other = suggestions.filter((x) => !x.slot);
+  const other = suggestions.filter((x) => !x.slot).reverse();
   $("#tab-plan").replaceChildren(
     h("p", { class: "muted" }, "Options for each part of the weekend. Costs are per person. Nothing is booked yet."),
     h("p", { style: "font-weight:700" }, "Tap an option to mark it as your pick. Tap it again to remove it. A dinner spot you pick for one night comes off the other nights."),
