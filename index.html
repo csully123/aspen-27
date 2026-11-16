@@ -781,11 +781,11 @@ function renderTrip() {
   const R = TRIP.firstRes;
   const resNote = (lands) => { const land = mins(lands), g1 = R.early - land, g2 = R.late - land;
     const feel = (g) => g > 90 ? "fine" : g >= 30 ? "tight" : g >= 0 ? "late" : "missed";
-    const a = feel(g1), b = feel(g2), lead = `Our first reservation would be between ${R.from} and ${R.to} at ${R.place} in Aspen (not confirmed yet). `;
+    const a = feel(g1), b = feel(g2), lead = `Our first reservation would be between ${R.from} and ${R.to} at ${R.place} in Aspen (not confirmed yet). No pressure to join that, but if you want to, `;
     if (a === "fine") return null;
-    if (b === "missed") return ["late", "Misses it", lead + `You'd land ${span(-g2)} after ${R.to}, so plan to meet us at dinner or back at the house.`];
-    if (a === "tight") return ["tight", "Tight", lead + `You'd land ${span(g1)} before ${R.from}, so that would be tight` + (b === "fine" ? `. Closer to ${R.to} you'd be fine.` : ` either way.`)];
-    return ["late", "Likely late", lead + (a === "late" ? `You'd land ${span(g1)} before ${R.from}` : `You'd land ${span(-g1)} after ${R.from}`) + `, so you'd be late for that` + (b === "fine" ? `. Closer to ${R.to} you'd be fine.` : b === "tight" ? `, and even ${R.to} would be tight.` : `, and late for ${R.to} too.`)]; };
+    if (b === "missed") return ["late", "Misses it", lead + `this flight won't make it: you'd land ${span(-g2)} after ${R.to}. Plan to meet us at dinner or back at the house.`];
+    if (a === "tight") return ["tight", "Tight", lead + `you'd land ${span(g1)} before ${R.from}, so that would be tight` + (b === "fine" ? `. Closer to ${R.to} you'd be fine.` : ` either way.`)];
+    return ["late", "Likely late", lead + (a === "late" ? `you'd land ${span(g1)} before ${R.from}` : `you'd land ${span(-g1)} after ${R.from}`) + `, so you'd be late for that` + (b === "fine" ? `. Closer to ${R.to} you'd be fine.` : b === "tight" ? `, and even ${R.to} would be tight.` : `, and late for ${R.to} too.`)]; };
   const flights = (rows, links, notes) => h("div", { class: "scroll" }, h("table", { class: "flights" },
     h("thead", {}, h("tr", {}, h("th", {}, "Leaves"), h("th", {}, "Lands"), h("th", {}, "Airline"), h("th", { class: "num" }, "One way"))),
     h("tbody", {}, rows.map(([dep, arr, air, stops, price, theirs]) => { const note = notes ? resNote(arr) : null;
@@ -811,7 +811,7 @@ function renderTrip() {
         h("p", { style: "margin:12px 0 6px" }, ext(TRIP.united, "abtn", "See these flights on United")),
         h("div", { class: "small muted" }, "The link opens United's Chicago to Aspen search for our dates. Pick the 9:15 AM out and the 4:20 PM back to be on their planes.")),
       h("h3", {}, "Thursday, Jan 21: Chicago O'Hare to Aspen"),
-      h("p", { class: "small muted", style: "margin:0 0 6px" }, `Our first reservation would be at ${TRIP.firstRes.place} in Aspen, somewhere between ${TRIP.firstRes.from} and ${TRIP.firstRes.to} on Thursday. We haven't picked the place yet. Flights that cut it close are flagged.`),
+      h("p", { class: "small muted", style: "margin:0 0 6px" }, `Our first reservation would be at ${TRIP.firstRes.place} in Aspen, somewhere between ${TRIP.firstRes.from} and ${TRIP.firstRes.to} on Thursday. We haven't picked the place yet. No pressure to join that, but if you want to, aim to land by about 2:00 PM. Flights that cut it close are flagged below.`),
       flights(TRIP.out, { United: TRIP.unitedOut, American: TRIP.aaOut }, true),
       h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allOut, "tlink", "Compare all Thursday flights on Google Flights")),
       h("h3", {}, "Sunday, Jan 24: Aspen to Chicago O'Hare"),
