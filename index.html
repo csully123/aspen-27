@@ -117,6 +117,8 @@
   button.btn.ghost { background: none; color: var(--accent); border: 2px solid var(--accent); }
   button.link { background: none; border: 0; color: var(--accent); font: inherit; padding: 0; cursor: pointer; text-decoration: underline; }
   .savebar { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .savetop { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: var(--soft); border: 2px solid var(--accent); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; }
+  .savetop p { margin: 0; flex: 1 1 240px; } .savetop button.btn { white-space: nowrap; flex: 0 0 auto; }
   .savebar button.btn { white-space: nowrap; flex: 0 0 auto; } .savebar > :not(button) { min-width: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { border-radius: 999px; padding: 4px 10px; font-size: .85rem; border: 1px solid var(--line); }
@@ -349,7 +351,8 @@ const PLAN = [
       { name: "Las Montañas", cost: "about $75 to $110", desc: "Lively upstairs Mexican spot in Aspen with mountain views and a bar. Tabletop sizzling fajitas, lobster and lamb barbacoa quesadillas, house-made tortillas and margaritas. Good for groups.", res: "Books on OpenTable for up to 20." },
       { name: "Campo de Fiori", cost: "about $100 to $130", desc: "Loud, social Italian trattoria in Aspen with pastas at $31 to $34. Open until 10:30.", res: "Books on OpenTable for up to 20." },
       { name: "J-Bar at Hotel Jerome", cost: "about $120", desc: "Burgers and a classic western bar that's been an Aspen hangout forever. Walk-in only, so there may be a wait for 7.", res: "Walk in only." },
-      { name: "Brunelleschi's", cost: "about $50 to $85", desc: "The cheapest dinner out. Pizza and pasta in Aspen with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." } ] }
+      { name: "Brunelleschi's", cost: "about $50 to $85", desc: "The cheapest dinner out. Pizza and pasta in Aspen with a sports-bar feel. Pizzas $20 to $28.", res: "Books on OpenTable for up to 20." },
+      { name: "Pine Creek Cookhouse", cost: "about $230 before drinks", desc: "A log cabin restaurant in the mountains past Aspen that you can only reach on cross-country skis, snowshoes or a horse-drawn sleigh. The ski in is a mile and a half, about 45 minutes, with a guide, and the gear and headlamp are included. Then a four-course dinner by the fire. $175 a person plus tax and a 22% service charge. The sleigh is $30 more. We'd need to be there by 6:00 PM, about 45 minutes from Timbers. Friday is their Full Moon night, with live music, a bonfire and drink specials. Would only work if we skip Cloud 9.", res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] }
   ] },
   { day: "Saturday, Jan 23", slots: [
     { id: "sat-bfast", label: "Breakfast", last: { name: "Daly Diner", cost: "~$25", note: "Diner breakfast in Snowmass before skiing." }, picks: [
@@ -369,7 +372,8 @@ const PLAN = [
       { name: "Jing", cost: "about $130 to $200", desc: "Lively room with good music. Chinese plus sushi, open until 10. Reviewers call it the place everyone ends up.", res: "Booking window to be confirmed." },
       { name: "Matsuhisa", cost: "about $175 to $250", desc: "Nobu Matsuhisa's Aspen restaurant and the big-name option. Shared plates at $26 to $39 each. Closes at 9.", res: "Downstairs room opens Dec 24 (30 days out), by phone for 7." },
       { name: "Betula", cost: "about $150 to $200", desc: "French and South American menu with a sunset view and a DJ that runs until midnight.", res: "By email. Reopens for winter Nov 26." },
-      { name: "Caribou Club", cost: "about $225", desc: "Seafood towers, caviar and club plates, and the DJ starts at 10 so we wouldn't need to go anywhere after.", res: "By arrangement, same as last year." } ] },
+      { name: "Caribou Club", cost: "about $225", desc: "Seafood towers, caviar and club plates, and the DJ starts at 10 so we wouldn't need to go anywhere after.", res: "By arrangement, same as last year." },
+      { name: "Pine Creek Cookhouse", cost: "about $230 before drinks", desc: "A log cabin restaurant in the mountains past Aspen that you can only reach on cross-country skis, snowshoes or a horse-drawn sleigh. The ski in is a mile and a half, about 45 minutes, with a guide, and the gear and headlamp are included. Then a four-course dinner by the fire. $175 a person plus tax and a 22% service charge. The sleigh is $30 more. We'd need to be there by 6:00 PM, about 45 minutes from Timbers. We'd be in ski clothes, so going out after would mean changing first.", res: "Books on SevenRooms. No payment up front, 24-hour cancellation." } ] },
     { id: "sat-out", label: "Night out", last: { name: "Stayed at Caribou Club", cost: "~$50", note: "Dance floor picked up around 11." }, picks: [
       { name: "Caribou Club", cost: "about $50", desc: "Members club with a DJ from 10 PM, and the dance floor picks up around 11.", res: "By arrangement, same as last year." },
       { name: "Escobar or Sterling", cost: "about $50", desc: "The two DJ clubs.", res: "Walk in." },
@@ -700,6 +704,9 @@ function renderMe() {
     h("label", { class: "q" }, "Damage insurance?", h("span", { class: "hint" }, "$3 a day. Doesn't cover loss or theft.")), radio("r_insurance", ["Yes", "No"], rent.insurance));
 
   const form = h("form", { id: "meForm" },
+    h("div", { class: "savetop" },
+      h("p", {}, h("b", {}, "Tap Save my answers when you're done on this page. "), "Your answers here don't count until you do. This is the only tab that needs it. Everything on the other tabs saves as soon as you tap it."),
+      h("button", { class: "btn" }, "Save my answers")),
     h("div", { class: "card" },
       h("h2", {}, me + "'s answers"),
       h("p", { class: "muted small" }, "You can come back and change these any time."),
