@@ -761,7 +761,7 @@ const TRIP = {
   unitedBack: "https://www.united.com/en/us/fsr/choose-flights?f=ASE&t=ORD&d=2027-01-24&tt=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A",
   aaOut: "https://www.aa.com/booking/search?locale=en_US&pax=1&adult=1&child=0&type=OneWay&searchType=Revenue&cabin=&carriers=ALL&travelType=personal&slices=%5B%7B%22orig%22%3A%22ORD%22%2C%22origNearby%22%3Afalse%2C%22dest%22%3A%22ASE%22%2C%22destNearby%22%3Afalse%2C%22date%22%3A%222027-01-21%22%7D%5D",
   aaBack: "https://www.aa.com/booking/search?locale=en_US&pax=1&adult=1&child=0&type=OneWay&searchType=Revenue&cabin=&carriers=ALL&travelType=personal&slices=%5B%7B%22orig%22%3A%22ASE%22%2C%22origNearby%22%3Afalse%2C%22dest%22%3A%22ORD%22%2C%22destNearby%22%3Afalse%2C%22date%22%3A%222027-01-24%22%7D%5D",
-  firstRes: { place: "Clark's Oyster Bar", from: "~3:30", to: "~4:30 PM", early: 15 * 60 + 30, late: 16 * 60 + 30 },
+  firstRes: { place: "a happy hour spot", from: "~3:30", to: "~4:30 PM", early: 15 * 60 + 30, late: 16 * 60 + 30 },
   map: "https://www.google.com/maps/search/?api=1&query=Timbers+Club+65+Timbers+Club+Ct+Snowmass+Village+CO+81615",
   booked: [
     { day: "Thursday, Jan 21", flight: "United UA 6033", route: "Chicago O'Hare 9:15 AM to Aspen 11:53 AM", detail: "Nonstop, 3 hr 38 min", price: 298 },
@@ -811,7 +811,7 @@ function renderTrip() {
         h("p", { style: "margin:12px 0 6px" }, ext(TRIP.united, "abtn", "See these flights on United")),
         h("div", { class: "small muted" }, "The link opens United's Chicago to Aspen search for our dates. Pick the 9:15 AM out and the 4:20 PM back to be on their planes.")),
       h("h3", {}, "Thursday, Jan 21: Chicago O'Hare to Aspen"),
-      h("p", { class: "small muted", style: "margin:0 0 6px" }, `Our first reservation would be at ${TRIP.firstRes.place} in Aspen, somewhere between ${TRIP.firstRes.from} and ${TRIP.firstRes.to} on Thursday. It isn't confirmed yet. Flights that cut it close are flagged.`),
+      h("p", { class: "small muted", style: "margin:0 0 6px" }, `Our first reservation would be at ${TRIP.firstRes.place} in Aspen, somewhere between ${TRIP.firstRes.from} and ${TRIP.firstRes.to} on Thursday. We haven't picked the place yet. Flights that cut it close are flagged.`),
       flights(TRIP.out, { United: TRIP.unitedOut, American: TRIP.aaOut }, true),
       h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allOut, "tlink", "Compare all Thursday flights on Google Flights")),
       h("h3", {}, "Sunday, Jan 24: Aspen to Chicago O'Hare"),
