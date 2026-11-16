@@ -471,12 +471,13 @@ const answered = (r) => !!r && ["splurge", "sushi", "arrive", "depart"].some((k)
 function setC9(on) { c9 = on; ls.set("aspen_c9", c9); if (me) store.saveSki(me, { ...ski, c9 }).catch(() => {}); }
 const C9_SLOT = "fri-lunch", C9_PICK = "Cloud Nine";
 function setCloudNine(answer) {
-  const on = answer !== "No";
+  const leave = answer !== "Yes" && answer !== "No";           // "Only if everyone's in" leaves the button and the Plan pick as they are
+  const on = leave ? c9 : answer === "Yes";
   if (on !== c9) setC9(on);                                   // Budget button
   if (me) {
     voteC9(answer);                                           // My answers
     const mine = { ...(allPicks[me] || {}) }, cur = new Set(mine[C9_SLOT] || []);
-    if (cur.has(C9_PICK) !== on) {                            // Plan pick
+    if (!leave && cur.has(C9_PICK) !== on) {                  // Plan pick
       const any = anyOf(me);
       if (on) cur.add(C9_PICK); else cur.delete(C9_PICK);
       mine[C9_SLOT] = [...cur]; mine._any = [...any]; delete mine._chris;
