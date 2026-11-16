@@ -491,7 +491,7 @@ function renderBudget() {
   $("#tab-budget").replaceChildren(
     h("div", { class: "card" },
       h("h2", {}, "What the trip costs, roughly"),
-      h("p", { class: "muted" }, "Rounded from what last year cost each of us. Treat it as this year's budget. Flights aren't included."),
+      h("p", { class: "muted" }, "Rounded from prior trips I've taken in Aspen. Treat it as this year's budget. Flights aren't included."),
       !me && h("p", { class: "small", style: "font-weight:700" }, "Pick your name at the top first so your skiing choices are saved."),
       h("div", { class: "switches" }, pill(ski.on, "I plan on skiing", (e) => { ski.on = e.target.checked; save(); })),
       ski.on && h("div", { class: "choices" }, choice("fri", "full"), choice("fri", "half"), choice("sat", "full"), choice("sat", "half")),
