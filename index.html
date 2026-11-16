@@ -191,6 +191,12 @@
   .who2 { display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--gold-ink); background: var(--gold); border-radius: 999px; padding: 2px 9px; }
   table.flights tr.theirs td { background: var(--soft); }
   table.flights td { padding: 9px 6px; }
+  table.flights a.tlink { white-space: nowrap; }
+  table.flights tr.hasnote td { border-bottom: 0; padding-bottom: 2px; }
+  table.flights tr.note td { padding-top: 0; padding-bottom: 10px; }
+  .flag { display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; margin-right: 6px; }
+  .flag.tight { color: #7a5600; background: #fbeec6; } .flag.late { color: #9b2226; background: #fbdcdc; }
+  @media (prefers-color-scheme: dark) { .flag.tight { color: #f1cf73; background: #3d3211; } .flag.late { color: #f5a3a3; background: #45191b; } }
   .trip h3 { margin: 16px 0 6px; }
   .trip ul { margin: 6px 0 0; padding-left: 20px; } .trip li { margin: 7px 0; }
   .addr { font-weight: 700; font-size: 1.05rem; }
@@ -751,6 +757,11 @@ const TRIP = {
   united: "https://www.united.com/en/us/fsr/choose-flights?f=ORD&t=ASE&d=2027-01-21&r=2027-01-24&sc=7,7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=R",
   allOut: "https://www.google.com/travel/flights?q=one%20way%20flights%20from%20ORD%20to%20ASE%20on%202027-01-21",
   allBack: "https://www.google.com/travel/flights?q=one%20way%20flights%20from%20ASE%20to%20ORD%20on%202027-01-24",
+  unitedOut: "https://www.united.com/en/us/fsr/choose-flights?f=ORD&t=ASE&d=2027-01-21&tt=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A",
+  unitedBack: "https://www.united.com/en/us/fsr/choose-flights?f=ASE&t=ORD&d=2027-01-24&tt=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A",
+  aaOut: "https://www.aa.com/booking/search?locale=en_US&pax=1&adult=1&child=0&type=OneWay&searchType=Revenue&cabin=&carriers=ALL&travelType=personal&slices=%5B%7B%22orig%22%3A%22ORD%22%2C%22origNearby%22%3Afalse%2C%22dest%22%3A%22ASE%22%2C%22destNearby%22%3Afalse%2C%22date%22%3A%222027-01-21%22%7D%5D",
+  aaBack: "https://www.aa.com/booking/search?locale=en_US&pax=1&adult=1&child=0&type=OneWay&searchType=Revenue&cabin=&carriers=ALL&travelType=personal&slices=%5B%7B%22orig%22%3A%22ASE%22%2C%22origNearby%22%3Afalse%2C%22dest%22%3A%22ORD%22%2C%22destNearby%22%3Afalse%2C%22date%22%3A%222027-01-24%22%7D%5D",
+  firstRes: { place: "Clark's Oyster Bar", time: "3:30 PM", at: 15 * 60 + 30 },
   map: "https://www.google.com/maps/search/?api=1&query=Timbers+Club+65+Timbers+Club+Ct+Snowmass+Village+CO+81615",
   booked: [
     { day: "Thursday, Jan 21", flight: "United UA 6033", route: "Chicago O'Hare 9:15 AM to Aspen 11:53 AM", detail: "Nonstop, 3 hr 38 min", price: 298 },
@@ -765,20 +776,31 @@ const TRIP = {
 };
 function renderTrip() {
   const ext = (href, cls, text) => h("a", { href, target: "_blank", rel: "noopener", class: cls }, text);
-  const flights = (rows) => h("div", { class: "scroll" }, h("table", { class: "flights" },
+  const mins = (s) => { const m = s.match(/(\d+):(\d+) (AM|PM)/); return ((+m[1] % 12) + (m[3] === "PM" ? 12 : 0)) * 60 + +m[2]; };
+  const span = (n) => { const hrs = Math.floor(n / 60), m = n % 60; return [hrs ? hrs + (hrs === 1 ? " hour" : " hours") : "", m ? m + " minutes" : ""].filter(Boolean).join(" "); };
+  const R = TRIP.firstRes;
+  const resNote = (lands) => { const gap = R.at - mins(lands);
+    if (gap > 90) return null;
+    if (gap >= 30) return ["tight", "Tight", `Our first reservation would be ${R.time} at ${R.place} in Aspen, only ${span(gap)} after you land. You'd have to go straight there from the airport.`];
+    if (gap >= 0) return ["late", "Late", `You'd land ${span(gap)} before our ${R.time} reservation at ${R.place} in Aspen, so you'd get there late and join us partway through.`];
+    return ["late", "Misses it", `You'd land ${span(-gap)} after our ${R.time} reservation at ${R.place}. Plan to meet us at dinner or back at the house.`]; };
+  const flights = (rows, links, notes) => h("div", { class: "scroll" }, h("table", { class: "flights" },
     h("thead", {}, h("tr", {}, h("th", {}, "Leaves"), h("th", {}, "Lands"), h("th", {}, "Airline"), h("th", { class: "num" }, "One way"))),
-    h("tbody", {}, rows.map(([dep, arr, air, stops, price, theirs]) => h("tr", { class: theirs ? "theirs" : null },
-      h("td", {}, dep), h("td", {}, arr),
-      h("td", {}, air, h("div", { class: "small muted" }, stops), theirs ? h("div", {}, h("span", { class: "who2" }, "Ali and Dan")) : null),
-      h("td", { class: "num" }, money0(price)))))));
+    h("tbody", {}, rows.map(([dep, arr, air, stops, price, theirs]) => { const note = notes ? resNote(arr) : null;
+      return [h("tr", { class: [theirs ? "theirs" : "", note ? "hasnote" : ""].join(" ").trim() || null },
+        h("td", {}, dep), h("td", {}, arr),
+        h("td", {}, air, h("div", { class: "small muted" }, stops), theirs ? h("div", {}, h("span", { class: "who2" }, "Ali and Dan")) : null,
+          h("div", { class: "small" }, ext(links[air], "tlink", "See on " + air))),
+        h("td", { class: "num" }, money0(price))),
+        note ? h("tr", { class: "note" + (theirs ? " theirs" : "") }, h("td", { colspan: 4 }, h("span", { class: "flag " + note[0] }, note[1]), h("span", { class: "small" }, note[2]))) : null]; }))));
   $("#tab-trip").replaceChildren(
     h("div", { class: "card trip" },
       h("h2", {}, "We're running it back"),
       h("p", { class: "lede" }, "Same house, more people, colder month. Seven of us take over Timbers Club in Snowmass from Thursday, January 21 to Sunday, January 24 for skiing, hot tubs, game nights and at least one dinner none of us should be paying for. Better yet, it's Gay Ski Week in Aspen, and not just any year: it's the 50th anniversary. That means a downhill costume contest on Friday, a dance party on top of the mountain, and a town in the best mood it's been in all winter. Translation: it should be a phenomenal time. Aspen hat still mandatory.")),
 
     h("div", { class: "card trip" },
-      h("h2", {}, "Flights"),
-      h("p", { class: "muted", style: "margin:4px 0 0" }, "Ali and Dan are already booked out of Chicago. Join them if you can, or grab one of the other flights below."),
+      h("h2", {}, "Flight Options"),
+      h("p", { class: "muted", style: "margin:4px 0 0" }, `See below for flight options. Prices were checked on ${TRIP.checked} and may have changed.`),
       h("div", { class: "flightbox" },
         h("h3", { style: "margin:0 0 4px" }, "Ali and Dan's flights"),
         TRIP.booked.map((f) => h("div", { class: "leg" },
@@ -787,12 +809,13 @@ function renderTrip() {
         h("p", { style: "margin:12px 0 6px" }, ext(TRIP.united, "abtn", "See these flights on United")),
         h("div", { class: "small muted" }, "The link opens United's Chicago to Aspen search for our dates. Pick the 9:15 AM out and the 4:20 PM back to be on their planes.")),
       h("h3", {}, "Thursday, Jan 21: Chicago O'Hare to Aspen"),
-      flights(TRIP.out),
-      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allOut, "tlink", "See all Thursday flights")),
+      h("p", { class: "small muted", style: "margin:0 0 6px" }, `For now we're assuming our first reservation is ${TRIP.firstRes.place} in Aspen at ${TRIP.firstRes.time}. Flights that cut it close are flagged.`),
+      flights(TRIP.out, { United: TRIP.unitedOut, American: TRIP.aaOut }, true),
+      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allOut, "tlink", "Compare all Thursday flights on Google Flights")),
       h("h3", {}, "Sunday, Jan 24: Aspen to Chicago O'Hare"),
-      flights(TRIP.back),
-      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allBack, "tlink", "See all Sunday flights")),
-      h("p", { class: "small muted", style: "margin:14px 0 0" }, `Prices are one way, per person, in economy, as of ${TRIP.checked}. They will move, so check before you book. Times are local to each airport.`),
+      flights(TRIP.back, { United: TRIP.unitedBack, American: TRIP.aaBack }, false),
+      h("p", { class: "small", style: "margin:8px 0 0" }, ext(TRIP.allBack, "tlink", "Compare all Sunday flights on Google Flights")),
+      h("p", { class: "small muted", style: "margin:14px 0 0" }, "Prices are one way, per person, in economy. Times are local to each airport. Each link opens that airline's search for our date, so pick the matching departure time."),
       h("p", { style: "margin:14px 0 0" }, "Once you book, add your flight on the ", h("button", { class: "link", type: "button", onclick: () => showTab("me") }, "My answers"), " tab so Timbers knows when to pick you up.")),
 
     h("div", { class: "card trip" },
