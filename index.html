@@ -901,7 +901,7 @@ function renderTrip() {
 
     h("div", { class: "card trip" },
       h("h2", {}, "Itinerary"),
-      h("p", { class: "muted", style: "margin:4px 0 10px" }, "Still taking shape. Cast your votes on the ", h("button", { class: "link", type: "button", onclick: () => showTab("plan") }, "Plan"), " tab and this fills in once we lock things."),
+      h("p", { class: "muted", style: "margin:4px 0 10px" }, "Still taking shape. Go through the trip cost on the ", h("button", { class: "link", type: "button", onclick: () => showTab("budget") }, "Budget"), " tab and then cast your votes on the ", h("button", { class: "link", type: "button", onclick: () => showTab("plan") }, "Plan"), " tab. This fills in once we lock things."),
       TRIP.days.map((d) => h("div", { class: "itin" }, h("span", { class: "d" }, d), h("span", { class: "tbd" }, "TBD"))))
   );
 }
