@@ -639,7 +639,7 @@ function renderMe() {
     h("div", { class: "card" },
       h("h2", {}, me + "'s answers"),
       h("p", { class: "muted small" }, "You can come back and change these any time."),
-      ["splurge", "cloud9", "sushi"].map((k) => [h("label", { class: "q" }, Q[k].q, Q[k].hint && h("span", { class: "hint" }, Q[k].hint)), radio(k, Q[k].opts, r[k])])),
+      ["splurge", "sushi", "cloud9"].map((k) => [h("label", { class: "q" }, Q[k].q, Q[k].hint && h("span", { class: "hint" }, Q[k].hint)), radio(k, Q[k].opts, r[k])])),
     h("div", { class: "card" },
       h("h2", {}, "Skiing"),
       h("p", { class: "small muted" }, "Filled in from your choices on the Budget tab."),
