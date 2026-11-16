@@ -104,6 +104,10 @@
   input[type=text], input[type=password], input[type=email], input[type=number], input[type=date], input[type=time], select, textarea {
     width: 100%; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
   textarea { min-height: 84px; resize: vertical; }
+  /* iPhone Safari draws date boxes wider and taller than other fields, with centered text, unless told otherwise */
+  input[type=date], input[type=time] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; min-height: calc(1.5em + 22px); text-align: left; }
+  input[type=date]::-webkit-date-and-time-value, input[type=time]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+  .grid2 > div, .field { min-width: 0; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .grid2 > div > span, .field > span { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 3px; }
   @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
@@ -112,6 +116,7 @@
   button.btn.ghost { background: none; color: var(--accent); border: 2px solid var(--accent); }
   button.link { background: none; border: 0; color: var(--accent); font: inherit; padding: 0; cursor: pointer; text-decoration: underline; }
   .savebar { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .savebar button.btn { white-space: nowrap; flex: 0 0 auto; } .savebar > :not(button) { min-width: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { border-radius: 999px; padding: 4px 10px; font-size: .85rem; border: 1px solid var(--line); }
   .chip.done { background: var(--good); color: var(--card); border-color: var(--good); }
