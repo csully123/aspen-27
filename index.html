@@ -505,7 +505,7 @@ function renderBudget() {
         h("td", {}, r[0], r[2] && h("span", { class: "skitag" }, "ski"), r[3] && h("div", { class: "small muted" }, "(" + r[3] + ")")), h("td", { class: "num" }, money0(r[1])))))))),
     grand,
     h("div", { class: "card" },
-      h("h2", {}, c9 ? "Cloud Nine is in your total 🍾" : "Cloud Nine would be extra 🍾"),
+      h("h2", {}, c9 ? "Cloud Nine is in your total 🍾" : `Cloud Nine would be ~${money0(CLOUD9_THIS_YEAR)} extra 🍾`),
       h("p", {}, h("b", {}, "What it is: "), "Cloud Nine is the champagne-spraying lunch party on the mountain at Aspen Highlands. We'd do the 1:45 PM seating on Friday: ski there, eat lunch, then the music goes up and the bottles come out."),
       h("ul", { class: "c9list" },
         h("li", {}, h("b", {}, "About $685 a person to book. "), "That part is non-refundable."),
