@@ -160,8 +160,7 @@
   .switches label.goldbtn:has(input:checked)::before { background: #2a1e00; color: #f3c748; border-color: #2a1e00; }
   .switches label.goldbtn:has(input:focus-visible) { outline-color: #d4a017; }
   /* ---- plan page: divider, pickable options, ideas ---- */
-  .cmp .thisyear { border-top: 3px solid var(--line); padding-top: 12px; }
-  @media (min-width: 680px) { .cmp .thisyear { border-top: 0; border-left: 3px solid var(--line); padding: 0 0 0 18px; } }
+  .cmp .thisyear { grid-column: 1 / -1; }
   button.pick { display: block; width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
     border: 2px solid color-mix(in srgb, var(--accent) 55%, var(--line)); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 30%, transparent); transition: transform .06s, box-shadow .06s; }
   button.pick:hover { border-color: var(--accent); } button.pick:active { transform: translateY(2px); box-shadow: none; }
@@ -319,7 +318,7 @@ const PLAN = [
       { name: "Ajax Tavern", cost: "about $60", desc: "Slope-side patio at the base of Aspen Mountain, known for the burger and truffle fries. More of an après scene than a deal.",
         res: "Walk up for drinks. Reservations are for dinner only." } ] },
     { id: "thu-din", label: "Dinner", last: { name: "J-Bar at Hotel Jerome", cost: "~$120", note: "Walk-in only. Burgers and a classic Aspen bar." }, picks: [
-      { name: "J-Bar at Hotel Jerome", cost: "about $120", desc: "Last year's dinner. Burgers and a classic western bar that's been an Aspen hangout forever. Walk-in only, so there may be a wait for 7.", res: "Walk in only." },
+      { name: "J-Bar at Hotel Jerome", cost: "about $120", desc: "Chris has been and liked it. Burgers and a classic western bar that's been an Aspen hangout forever. Walk-in only, so there may be a wait for 7.", res: "Walk in only." },
       { name: "Stay at Clark's", cost: "about $90 to $130", desc: "Keep the table and roll happy hour into dinner. Linguine with clams, cioppino, lobster rolls and a raw bar.", res: "Same reservation as happy hour." },
       { name: "Las Montañas", cost: "about $75 to $110", desc: "Lively upstairs Mexican spot with mountain views and a bar. Tabletop sizzling fajitas, lobster and lamb barbacoa quesadillas, house-made tortillas and margaritas. Rated 4.8 on OpenTable and good for groups.",
         res: "Books on OpenTable for up to 20. Jan 21 should open in early December." },
@@ -332,13 +331,13 @@ const PLAN = [
         res: "Books on Tock. Not open yet; Cloud Nine opens for the season Dec 12. We need to decide soon." },
       { name: "Ski one of the mountains, lunch on the mountain", cost: "about $40", desc: "The easy option if we skip Cloud Nine.", res: "No reservation needed." } ] },
     { id: "fri-apres", label: "Après", last: { name: "The Little Nell", cost: "~$70", note: "Après at the base of Aspen Mountain." }, picks: [
-      { name: "The Little Nell", cost: "about $70", desc: "Last year's après, at the base of Aspen Mountain. Drinks by the fireplace at the Wine Bar or on the Ajax Tavern patio next door. (Works if we ski Aspen Mountain or head into town after.)", res: "Walk in." },
+      { name: "The Little Nell", cost: "about $70", desc: "At the base of Aspen Mountain. Chris has been and liked it. Drinks by the fireplace at the Wine Bar or on the Ajax Tavern patio next door. (Works if we ski Aspen Mountain or head into town after.)", res: "Walk in." },
       { name: "Venga Venga", cost: "about $50 to $80", desc: "Slope-side Mexican patio at the bottom of Fanny Hill in Snowmass with an outdoor bar, fire pits and margaritas. We ski right to it and it's a short trip back to Timbers. (Works if we ski Snowmass that day.)",
         res: "Walk up. We'd call ahead to hold space for 7." },
-      { name: "Highlands Alehouse", cost: "about $40 to $60", desc: "The bar at the bottom of Highlands we skied into last year. Laid-back, rowdy and fun, with a big crowd coming off the mountain. (Would only go here if we chose Cloud 9.)", res: "Walk in. Reopens for winter Dec 12." },
+      { name: "Highlands Alehouse", cost: "about $40 to $60", desc: "The bar at the bottom of Highlands that you ski right into. Laid-back, rowdy and fun, with a big crowd coming off the mountain. (Would only go here if we chose Cloud 9.)", res: "Walk in. Reopens for winter Dec 12." },
       { name: "Ajax Tavern, then the WET Deck", cost: "about $75 to $150", desc: "Only if we ski Aspen Mountain that day. Truffle fries on the Ajax patio, then the W's rooftop with a DJ, fire pits and a hot tub.", res: "The WET Deck books on OpenTable for up to 20." } ] },
     { id: "fri-din", label: "Dinner", last: { name: "Tasters pizza delivery", cost: "~$20", note: "Pizza, games and the hot tub at the residence. A casual night in because we did Cloud Nine that day." }, picks: [
-      { name: "Tasters and game night", cost: "about $20", desc: "Same again: New York-style pizza delivered to the residence, games and the hot tub. Most likely if we choose Cloud 9 that day.", res: "No reservation needed." },
+      { name: "Tasters and game night", cost: "about $20", desc: "New York-style pizza delivered to the residence, games and the hot tub. Most likely if we choose Cloud 9 that day.", res: "No reservation needed." },
       { name: "Woody Creek Tavern", cost: "about $60 to $85", desc: "Dinner out at Hunter S. Thompson's old hangout: a funky, rustic roadhouse covered in memorabilia, known for burgers, fish tacos, enchiladas and margaritas. Burger and fish tacos are $27 each. About 20 minutes from Timbers, so we'd need a ride each way.", res: "Reservations for 7 to be confirmed." },
       { name: "Il Poggio", cost: "about $80 to $120", desc: "Lively Italian in Snowmass with hearth-baked pizzas and pasta, if we'd rather go out without leaving the village.", res: "To be confirmed if we want it." },
       { name: "Las Montañas", cost: "about $75 to $110", desc: "Lively upstairs Mexican spot in Aspen with mountain views and a bar. Tabletop sizzling fajitas, lobster and lamb barbacoa quesadillas, house-made tortillas and margaritas. Good for groups.", res: "Books on OpenTable for up to 20." },
@@ -349,12 +348,12 @@ const PLAN = [
   { day: "Saturday, Jan 23", slots: [
     { id: "sat-bfast", label: "Breakfast", last: { name: "Daly Diner", cost: "~$25", note: "Diner breakfast in Snowmass before skiing." }, picks: [
       { name: "Breakfast at Timbers", cost: "free", desc: "Free breakfast at the club before heading out.", res: "No reservation needed." },
-      { name: "Daly Diner", cost: "about $25", desc: "The diner again.", res: "No reservation needed." } ] },
+      { name: "Daly Diner", cost: "about $25", desc: "A sit-down diner breakfast in Snowmass, if we want more than the free spread.", res: "No reservation needed." } ] },
     { id: "sat-lunch", label: "Lunch and après", last: { name: "Up 4 Pizza, then free après at Timbers", cost: "~$40", note: "Skied Snowmass all day." }, picks: [
       { name: "Ski one of the mountains, lunch on the mountain", cost: "about $40", desc: "Lunch on the mountain, then the free après at Timbers from 3:30 to 4:30 before getting ready to go out.", res: "No reservation needed." } ] },
     { id: "sat-drinks", label: "Drinks before dinner", last: { name: "Aspen Brewing Co", cost: "~$20", note: "Very chill." }, picks: [
       { name: "Aspen Public House", cost: "about $40 for two drinks", desc: "Rustic bar in the Wheeler Opera House that gets lively at night. Same easygoing feel as Aspen Brewing Co with more energy.", res: "Walk in." },
-      { name: "Aspen Brewing Co", cost: "about $20 for two beers", desc: "Last year's spot: craft beer, pizza, darts and pool.", res: "Walk in." },
+      { name: "Aspen Brewing Co", cost: "about $20 for two beers", desc: "Chill spot with craft beer, pizza, darts and pool. Chris has been and liked it.", res: "Walk in." },
       { name: "J-Bar", cost: "about $50 for two drinks", desc: "The classic western bar at the Hotel Jerome and a longtime town hangout. Good for one round, but expect to stand on a Saturday.", res: "Walk in only." },
       { name: "BUCK", cost: "about $30 for two drinks", desc: "Old-school ski bar with a high-energy crowd, and cheap by Aspen standards.", res: "Walk in." },
       { name: "Stranahan's Whiskey Lodge", cost: "about $50 for two drinks", desc: "Western-style whiskey and cocktail bar on the walking mall.", res: "Walk in." } ] },
@@ -366,7 +365,7 @@ const PLAN = [
       { name: "Betula", cost: "about $150 to $200", desc: "French and South American menu with a sunset view and a DJ that runs until midnight.", res: "By email. Reopens for winter Nov 26." },
       { name: "Caribou Club", cost: "about $225", desc: "Seafood towers, caviar and club plates, and the DJ starts at 10 so we wouldn't need to go anywhere after.", res: "By arrangement, same as last year." } ] },
     { id: "sat-out", label: "Night out", last: { name: "Stayed at Caribou Club", cost: "~$50", note: "Dance floor picked up around 11." }, picks: [
-      { name: "Caribou Club", cost: "about $50", desc: "Where we ended up last year. Members club with a DJ from 10 PM, and the dance floor picks up around 11.", res: "By arrangement, same as last year." },
+      { name: "Caribou Club", cost: "about $50", desc: "Members club with a DJ from 10 PM, and the dance floor picks up around 11. Chris has been and liked it.", res: "By arrangement, same as last year." },
       { name: "Escobar or Sterling", cost: "about $50", desc: "The two DJ clubs.", res: "Walk in." },
       { name: "Silver City", cost: "about $40", desc: "Western saloon with live bands.", res: "Walk in." },
       { name: "Bad Harriet", cost: "$50 deposit each", desc: "Speakeasy under the Hotel Jerome with a DJ from 10 PM.", res: "Books on Resy." } ] }
@@ -374,7 +373,7 @@ const PLAN = [
   { day: "Sunday, Jan 24", slots: [
     { id: "sun-brunch", label: "Brunch", last: { name: "White House Tavern", cost: "~$40", note: "Great sandwiches. Walk-in only." }, picks: [
       { name: "Bear Den", cost: "about $40", desc: "Cozy all-day spot in a historic house. Brunch runs 9 AM to 3 PM and they take reservations, which helps with 7.", res: "We'd book once winter hours are confirmed." },
-      { name: "White House Tavern", cost: "about $40", desc: "Last year's brunch. Still great, but walk-in only, so there may be a wait for 7.", res: "Walk in only." },
+      { name: "White House Tavern", cost: "about $40", desc: "Chris has been and liked it. Walk-in only, so there may be a wait for 7.", res: "Walk in only." },
       { name: "Mawa's Kitchen", cost: "about $45", desc: "Michelin-recommended and right by the airport, so it works on the way out.", res: "Brunch hours to be confirmed." } ] }
   ] }
 ];
@@ -591,7 +590,7 @@ function renderPlan(force) {
   };
   const other = suggestions.filter((x) => !x.slot);
   $("#tab-plan").replaceChildren(
-    h("p", { class: "muted" }, "Where we went last year next to this year's options. Costs are per person. Nothing is booked yet."),
+    h("p", { class: "muted" }, "Options for each part of the weekend. Costs are per person. Nothing is booked yet."),
     h("p", { style: "font-weight:700" }, "Tap an option to mark it as your pick. Tap it again to remove it. A dinner spot you pick for one night comes off the other nights."),
     h("div", { class: "switches" }, h("label", {}, h("input", { type: "checkbox", checked: !!(me && allAny(me)), onchange: (e) => toggleChris(e.target.checked) }), "I don't care, Chris can pick for me")),
     h("p", { class: "small muted chrisnote" }, me && allAny(me) ? "Done. Every section below is marked \"good with anything\" for you. Tap a place in any section if you change your mind." : "Tap that to mark every section \"good with anything\" in one go. Or go section by section below: pick places where you have a preference, and tap \"I'm good with anything for this\" where you don't.",
@@ -599,9 +598,7 @@ function renderPlan(force) {
     ...PLAN.map((d) => h("div", { class: "card" }, h("h2", {}, d.day),
       d.slots.map((s) => h("div", { class: "cmp" },
         h("div", { class: "label" }, s.label),
-        h("div", { class: "lastyear" }, h("div", { class: "colhead" }, "Last year"),
-          h("div", { class: "lastbox" }, h("div", {}, h("span", { class: "name" }, s.last.name), s.last.cost && h("span", { class: "cost" }, " " + s.last.cost)), h("div", { class: "small muted" }, s.last.note))),
-        h("div", { class: "thisyear" }, h("div", { class: "colhead" }, "This year's options"),
+        h("div", { class: "thisyear" },
           s.picks.map((p) => { const who = pickers(s.id, p.name), mine = who.includes(me);
             const night = !mine && me && DINNERS[s.id] ? Object.keys(DINNERS).find((id) => id !== s.id && (allPicks[me]?.[id] || []).includes(p.name)) : "";
             if (night && !who.length) return null;
@@ -653,7 +650,7 @@ function startSnow() {
 
 /* ---------- my answers tab ---------- */
 const Q = {
-  splurge: { q: "Are you good with a splurge dinner?", hint: "Either Friday or Saturday, depending on other plans. About $200 a person. Last year was about $225 a person.", opts: ["Yes", "No"] },
+  splurge: { q: "Are you good with a splurge dinner?", hint: "Either Friday or Saturday, depending on other plans. About $200 a person.", opts: ["Yes", "No"] },
   cloud9: { q: "Do you want to do Cloud Nine on Friday?", hint: "About $1,000 a person. Friday is the only day that works and we have to decide soon.", opts: ["Yes", "No", "Only if everyone's in"] },
   sushi: { q: "Would you be ok with sushi being one of our dinners?", opts: ["Yes", "No", "Fine, I'll order cooked dishes"] }
 };
